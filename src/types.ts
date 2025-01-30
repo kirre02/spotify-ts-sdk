@@ -76,6 +76,10 @@ type Artists = {
   artists: Artist[];
 };
 
+type FollowedArtists = {
+  artists: Artist[];
+};
+
 type AlbumBase = {
   album_type: string;
   available_markets: string[];
@@ -508,6 +512,36 @@ type SimplifiedPlaylist = PlaylistBase & {
 type TrackReference = {
   href: string;
   total: number;
+};
+
+type UserReference = {
+  display_name: string;
+  external_urls: ExternalUrls;
+  href: string;
+  id: string;
+  type: string;
+  uri: string;
+};
+
+type User = {
+  display_name: string;
+  email: string;
+  external_urls: ExternalUrls;
+  followers: Followers;
+  href: string;
+  id: string;
+  images: Image[];
+  type: string;
+  uri: string;
+};
+
+type UserProfile = User & {
+  country: string;
+  explicit_content: {
+    filter_enabled: boolean;
+    filter_locked: boolean;
+  };
+  product: string;
 };
 
 type TrackItem = Track | Episode;
