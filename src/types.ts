@@ -163,6 +163,17 @@ export type ResumePoint = {
   resume_position_ms: number;
 };
 
+export type Category = {
+  href: string;
+  icons: Image[];
+  id: string;
+  name: string;
+};
+
+export type Categories = {
+  categories: Page<Category>;
+};
+
 export type SimplifiedChapter = {
   available_markets: string[];
   chapter_number: number;
