@@ -38,6 +38,14 @@ export type Followers = {
   total: number;
 };
 
+export type LinkedFrom = {
+  external_urls: ExternalUrls;
+  href: string;
+  id: string;
+  type: string;
+  uri: string;
+};
+
 export type SimplifiedArtist = {
   external_urls: ExternalUrls;
   href: string;
@@ -54,31 +62,8 @@ export type Artist = SimplifiedArtist & {
   popularity: number;
 };
 
-export type LinkedFrom = {
-  external_urls: ExternalUrls;
-  href: string;
-  id: string;
-  type: string;
-  uri: string;
-};
-
-export type SimplifiedTrack = {
-  artists: SimplifiedArtist[];
-  available_markets: string[];
-  dics_number: number;
-  duration_ms: number;
-  explicit: boolean;
-  external_urls: ExternalUrls;
-  href: string;
-  id: string;
-  is_playable: boolean;
-  linked_from: LinkedFrom;
-  restrictions: Restrictions;
-  name: string;
-  track_number: number;
-  type: string;
-  uri: string;
-  is_local: boolean;
+export type Artists = {
+  artists: Artist[];
 };
 
 export type AlbumBase = {
@@ -133,4 +118,33 @@ export type AlbumTrack = {
 
 export type NewReleases = {
   albums: Page<SimplifiedAlbum>;
+};
+
+export type SimplifiedTrack = {
+  artists: SimplifiedArtist[];
+  available_markets: string[];
+  dics_number: number;
+  duration_ms: number;
+  explicit: boolean;
+  external_urls: ExternalUrls;
+  href: string;
+  id: string;
+  is_playable: boolean;
+  linked_from: LinkedFrom;
+  restrictions: Restrictions;
+  name: string;
+  track_number: number;
+  type: string;
+  uri: string;
+  is_local: boolean;
+};
+
+export type Track = SimplifiedTrack & {
+  album: SimplifiedAlbum;
+  external_ids: ExternalIds;
+  popularity: number;
+};
+
+export type TopTracksResult = {
+  tracks: Track[];
 };
