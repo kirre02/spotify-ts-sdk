@@ -196,6 +196,14 @@ export type SimplifiedChapter = {
   restrictions: Restrictions;
 };
 
+export type Chapters = {
+  chapters: Chapter[];
+};
+
+export type Chapter = SimplifiedChapter & {
+  audiobook: SimplifiedAudiobook;
+};
+
 export type SimplifiedTrack = {
   artists: SimplifiedArtist[];
   available_markets: string[];
