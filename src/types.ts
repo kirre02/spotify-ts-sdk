@@ -268,6 +268,61 @@ export type TopTracksResult = {
   tracks: Track[];
 };
 
+export type SnapshotReference = {
+  snapshot_id: string;
+};
+
+export type PlaylistBase = {
+  collaborative: boolean;
+  description: string;
+  external_urls: ExternalUrls;
+  followers: Followers;
+  href: string;
+  id: string;
+  images: Image[];
+  name: string;
+  owner: UserReference;
+  primary_color: string;
+  public: boolean;
+  snapshot_id: string;
+  type: string;
+  uri: string;
+};
+
+export type PlaylistedTrack<Item extends TrackItem = TrackItem> = {
+  added_at: string;
+  added_by: AddedBy;
+  is_local: boolean;
+  primary_color: string;
+  track: Item;
+};
+
+export type AddedBy = {
+  external_urls: ExternalUrls;
+  href: string;
+  id: string;
+  type: string;
+  uri: string;
+};
+
+export type Playlist<Item extends TrackItem = TrackItem> = PlaylistBase & {
+  tracks: Page<PlaylistedTrack<Item>>;
+};
+
+export type FeatureedPlaylists = {
+  message: string;
+  playlists: Page<SimplifiedPlaylist>;
+};
+
+export type SimplifiedPlaylist = PlaylistBase & {
+  tracks: TrackReference | null;
+};
+
+export type TrackReference = {
+  href: string;
+  total: number;
+};
+
 export type TrackItem = Track | Episode;
 
 export type Actions = {
