@@ -120,6 +120,71 @@ export type NewReleases = {
   albums: Page<SimplifiedAlbum>;
 };
 
+export type Author = {
+  name: string;
+};
+
+export type Narrator = {
+  name: string;
+};
+
+export type SimplifiedAudiobook = {
+  authors: Author[];
+  available_markets: string[];
+  copyrights: Copyright[];
+  description: string;
+  edition: string;
+  explicit: boolean;
+  external_urls: ExternalUrls;
+  href: string;
+  html_description: string;
+  id: string;
+  images: Image[];
+  languages: string[];
+  media_type: string;
+  name: string;
+  narrators: Narrator[];
+  publisher: string;
+  total_chapters: number;
+  type: string;
+  uri: string;
+};
+
+export type Audiobook = SimplifiedAudiobook & {
+  chapters: Page<SimplifiedChapter>;
+};
+
+export type Audiobooks = {
+  audiobooks: Audiobook[];
+};
+
+export type ResumePoint = {
+  fully_played: boolean;
+  resume_position_ms: number;
+};
+
+export type SimplifiedChapter = {
+  available_markets: string[];
+  chapter_number: number;
+  description: string;
+  html_description: string;
+  duration_ms: number;
+  explicit: boolean;
+  external_urls: ExternalUrls;
+  href: string;
+  id: string;
+  images: Image[];
+  is_playable: boolean;
+  languages: string[];
+  name: string;
+  release_date: string;
+  release_date_precision: string;
+  resume_point: ResumePoint;
+  type: string;
+  uri: string;
+  restrictions: Restrictions;
+};
+
 export type SimplifiedTrack = {
   artists: SimplifiedArtist[];
   available_markets: string[];
