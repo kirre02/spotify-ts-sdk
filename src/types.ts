@@ -1,4 +1,4 @@
-export type Page<TItemType> = {
+type Page<TItemType> = {
   href: string;
   items: TItemType[];
   limit: number;
@@ -8,37 +8,47 @@ export type Page<TItemType> = {
   total: number;
 };
 
-export type Copyright = {
+type Copyright = {
   text: string;
   type: string;
 };
 
-export type Image = {
+type Image = {
   url: string;
   height: number;
   width: number;
 };
 
-export type Restrictions = {
+type Restrictions = {
   reason: string;
 };
 
-export type ExternalIds = {
+type ExternalIds = {
   isrc: string;
   ean: string;
   upc: string;
 };
 
-export type ExternalUrls = {
+type ExternalUrls = {
   spotify: string;
 };
 
-export type Followers = {
+type Followers = {
   href: string | null;
   total: number;
 };
 
-export type LinkedFrom = {
+type SearchResultsMap = {
+  albums: SimplifiedAlbum;
+  artists: Artist;
+  tracks: Track;
+  playlists: SimplifiedPlaylist;
+  shows: SimplifiedShow;
+  episodes: SimplifiedEpisode;
+  audiobooks: SimplifiedAudiobook;
+};
+
+type LinkedFrom = {
   external_urls: ExternalUrls;
   href: string;
   id: string;
@@ -46,7 +56,7 @@ export type LinkedFrom = {
   uri: string;
 };
 
-export type SimplifiedArtist = {
+type SimplifiedArtist = {
   external_urls: ExternalUrls;
   href: string;
   id: string;
@@ -55,18 +65,18 @@ export type SimplifiedArtist = {
   uri: string;
 };
 
-export type Artist = SimplifiedArtist & {
+type Artist = SimplifiedArtist & {
   followers: Followers;
   genres: string[];
   images: Image[];
   popularity: number;
 };
 
-export type Artists = {
+type Artists = {
   artists: Artist[];
 };
 
-export type AlbumBase = {
+type AlbumBase = {
   album_type: string;
   available_markets: string[];
   copyrights: Copyright[];
@@ -87,26 +97,26 @@ export type AlbumBase = {
   uri: string;
 };
 
-export type SimplifiedAlbum = AlbumBase & {
+type SimplifiedAlbum = AlbumBase & {
   album_group: string;
   artists: SimplifiedArtist[];
 };
 
-export type SavedAlbum = {
+type SavedAlbum = {
   added_at: string;
   album: Album;
 };
 
-export type Album = AlbumBase & {
+type Album = AlbumBase & {
   artists: Artist[];
   tracks: Page<SimplifiedTrack>;
 };
 
-export type Albums = {
+type Albums = {
   albums: Album[];
 };
 
-export type AlbumTrack = {
+type AlbumTrack = {
   href: string;
   limit: number;
   next: string;
@@ -116,19 +126,19 @@ export type AlbumTrack = {
   items: SimplifiedTrack[];
 };
 
-export type NewReleases = {
+type NewReleases = {
   albums: Page<SimplifiedAlbum>;
 };
 
-export type Author = {
+type Author = {
   name: string;
 };
 
-export type Narrator = {
+type Narrator = {
   name: string;
 };
 
-export type SimplifiedAudiobook = {
+type SimplifiedAudiobook = {
   authors: Author[];
   available_markets: string[];
   copyrights: Copyright[];
@@ -150,31 +160,31 @@ export type SimplifiedAudiobook = {
   uri: string;
 };
 
-export type Audiobook = SimplifiedAudiobook & {
+type Audiobook = SimplifiedAudiobook & {
   chapters: Page<SimplifiedChapter>;
 };
 
-export type Audiobooks = {
+type Audiobooks = {
   audiobooks: Audiobook[];
 };
 
-export type ResumePoint = {
+type ResumePoint = {
   fully_played: boolean;
   resume_position_ms: number;
 };
 
-export type Category = {
+type Category = {
   href: string;
   icons: Image[];
   id: string;
   name: string;
 };
 
-export type Categories = {
+type Categories = {
   categories: Page<Category>;
 };
 
-export type SimplifiedChapter = {
+type SimplifiedChapter = {
   available_markets: string[];
   chapter_number: number;
   description: string;
@@ -196,15 +206,15 @@ export type SimplifiedChapter = {
   restrictions: Restrictions;
 };
 
-export type Chapters = {
+type Chapters = {
   chapters: Chapter[];
 };
 
-export type Chapter = SimplifiedChapter & {
+type Chapter = SimplifiedChapter & {
   audiobook: SimplifiedAudiobook;
 };
 
-export type SimplifiedEpisode = {
+type SimplifiedEpisode = {
   description: string;
   html_description: string;
   duration_ms: number;
@@ -226,20 +236,20 @@ export type SimplifiedEpisode = {
   restrictions: Restrictions;
 };
 
-export type Episode = SimplifiedEpisode & {
+type Episode = SimplifiedEpisode & {
   show: SimplifiedShow;
 };
 
-export type Episodes = {
+type Episodes = {
   episodes: Episode[];
 };
 
-export type SavedEpisode = {
+type SavedEpisode = {
   added_at: string;
   episode: Episode;
 };
 
-export type SimplifiedTrack = {
+type SimplifiedTrack = {
   artists: SimplifiedArtist[];
   available_markets: string[];
   dics_number: number;
@@ -258,21 +268,21 @@ export type SimplifiedTrack = {
   is_local: boolean;
 };
 
-export type Track = SimplifiedTrack & {
+type Track = SimplifiedTrack & {
   album: SimplifiedAlbum;
   external_ids: ExternalIds;
   popularity: number;
 };
 
-export type TopTracksResult = {
+type TopTracksResult = {
   tracks: Track[];
 };
 
-export type SnapshotReference = {
+type SnapshotReference = {
   snapshot_id: string;
 };
 
-export type PlaylistBase = {
+type PlaylistBase = {
   collaborative: boolean;
   description: string;
   external_urls: ExternalUrls;
@@ -289,7 +299,7 @@ export type PlaylistBase = {
   uri: string;
 };
 
-export type PlaylistedTrack<Item extends TrackItem = TrackItem> = {
+type PlaylistedTrack<Item extends TrackItem = TrackItem> = {
   added_at: string;
   added_by: AddedBy;
   is_local: boolean;
@@ -297,7 +307,7 @@ export type PlaylistedTrack<Item extends TrackItem = TrackItem> = {
   track: Item;
 };
 
-export type AddedBy = {
+type AddedBy = {
   external_urls: ExternalUrls;
   href: string;
   id: string;
@@ -305,27 +315,27 @@ export type AddedBy = {
   uri: string;
 };
 
-export type Playlist<Item extends TrackItem = TrackItem> = PlaylistBase & {
+type Playlist<Item extends TrackItem = TrackItem> = PlaylistBase & {
   tracks: Page<PlaylistedTrack<Item>>;
 };
 
-export type FeatureedPlaylists = {
+type FeatureedPlaylists = {
   message: string;
   playlists: Page<SimplifiedPlaylist>;
 };
 
-export type SimplifiedPlaylist = PlaylistBase & {
+type SimplifiedPlaylist = PlaylistBase & {
   tracks: TrackReference | null;
 };
 
-export type TrackReference = {
+type TrackReference = {
   href: string;
   total: number;
 };
 
-export type TrackItem = Track | Episode;
+type TrackItem = Track | Episode;
 
-export type Actions = {
+type Actions = {
   interrupting_playback: boolean;
   pausing: boolean;
   resuming: boolean;
@@ -338,7 +348,7 @@ export type Actions = {
   transferring_playback: boolean;
 };
 
-export type PlaybackState = {
+type PlaybackState = {
   device: Device;
   repeat_state: string;
   shuffle_state: boolean;
@@ -351,7 +361,7 @@ export type PlaybackState = {
   actions: Actions;
 };
 
-export type Device = {
+type Device = {
   id: string | null;
   is_active: boolean;
   is_private_session: boolean;
@@ -361,18 +371,18 @@ export type Device = {
   volume_percent: number | null;
 };
 
-export type Devices = {
+type Devices = {
   devices: Device[];
 };
 
-export type Context = {
+type Context = {
   type: string;
   href: string;
   external_urls: ExternalUrls;
   uri: string;
 };
 
-export type RecentlyPlayedTracks = {
+type RecentlyPlayedTracks = {
   href: string;
   limit: number;
   next: string | null;
@@ -384,13 +394,13 @@ export type RecentlyPlayedTracks = {
   items: PlayHistory[];
 };
 
-export type PlayHistory = {
+type PlayHistory = {
   track: Track;
   played_at: string;
   context: Context;
 };
 
-export type Queue = {
+type Queue = {
   currently_playing: TrackItem | null;
   queue: TrackItem[];
 };
