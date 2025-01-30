@@ -204,6 +204,41 @@ export type Chapter = SimplifiedChapter & {
   audiobook: SimplifiedAudiobook;
 };
 
+export type SimplifiedEpisode = {
+  description: string;
+  html_description: string;
+  duration_ms: number;
+  explicit: boolean;
+  external_urls: ExternalUrls;
+  href: string;
+  id: string;
+  images: Image[];
+  is_externally_hosted: boolean;
+  is_playable: boolean;
+  language: string;
+  languages: string[];
+  name: string;
+  release_date: string;
+  release_date_precision: string;
+  resume_point: ResumePoint;
+  type: string;
+  uri: string;
+  restrictions: Restrictions;
+};
+
+export type Episode = SimplifiedEpisode & {
+  show: SimplifiedShow;
+};
+
+export type Episodes = {
+  episodes: Episode[];
+};
+
+export type SavedEpisode = {
+  added_at: string;
+  episode: Episode;
+};
+
 export type SimplifiedTrack = {
   artists: SimplifiedArtist[];
   available_markets: string[];
