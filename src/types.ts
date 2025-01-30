@@ -267,3 +267,75 @@ export type Track = SimplifiedTrack & {
 export type TopTracksResult = {
   tracks: Track[];
 };
+
+export type TrackItem = Track | Episode;
+
+export type Actions = {
+  interrupting_playback: boolean;
+  pausing: boolean;
+  resuming: boolean;
+  seeking: boolean;
+  skipping_next: boolean;
+  skipping_prev: boolean;
+  toggling_repeat_context: boolean;
+  toggling_shuffle: boolean;
+  toggling_repeat_track: boolean;
+  transferring_playback: boolean;
+};
+
+export type PlaybackState = {
+  device: Device;
+  repeat_state: string;
+  shuffle_state: boolean;
+  context: Context | null;
+  timestamp: number;
+  progress_ms: number;
+  is_playing: boolean;
+  item: TrackItem;
+  currently_playing_type: string;
+  actions: Actions;
+};
+
+export type Device = {
+  id: string | null;
+  is_active: boolean;
+  is_private_session: boolean;
+  is_restricted: boolean;
+  name: string;
+  type: string;
+  volume_percent: number | null;
+};
+
+export type Devices = {
+  devices: Device[];
+};
+
+export type Context = {
+  type: string;
+  href: string;
+  external_urls: ExternalUrls;
+  uri: string;
+};
+
+export type RecentlyPlayedTracks = {
+  href: string;
+  limit: number;
+  next: string | null;
+  cursors: {
+    after: string;
+    before: string;
+  };
+  total: number;
+  items: PlayHistory[];
+};
+
+export type PlayHistory = {
+  track: Track;
+  played_at: string;
+  context: Context;
+};
+
+export type Queue = {
+  currently_playing: TrackItem | null;
+  queue: TrackItem[];
+};
