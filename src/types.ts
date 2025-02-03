@@ -72,10 +72,6 @@ type Artist = SimplifiedArtist & {
   popularity: number;
 };
 
-type Artists = {
-  artists: Artist[];
-};
-
 type FollowedArtists = {
   artists: Artist[];
 };
@@ -114,10 +110,6 @@ type SavedAlbum = {
 type Album = AlbumBase & {
   artists: Artist[];
   tracks: Page<SimplifiedTrack>;
-};
-
-type Albums = {
-  albums: Album[];
 };
 
 type AlbumTrack = {
@@ -168,10 +160,6 @@ type Audiobook = SimplifiedAudiobook & {
   chapters: Page<SimplifiedChapter>;
 };
 
-type Audiobooks = {
-  audiobooks: Audiobook[];
-};
-
 type ResumePoint = {
   fully_played: boolean;
   resume_position_ms: number;
@@ -210,10 +198,6 @@ type SimplifiedChapter = {
   restrictions: Restrictions;
 };
 
-type Chapters = {
-  chapters: Chapter[];
-};
-
 type Chapter = SimplifiedChapter & {
   audiobook: SimplifiedAudiobook;
 };
@@ -244,10 +228,6 @@ type Episode = SimplifiedEpisode & {
   show: SimplifiedShow;
 };
 
-type Episodes = {
-  episodes: Episode[];
-};
-
 type SavedEpisode = {
   added_at: string;
   episode: Episode;
@@ -275,10 +255,6 @@ type SimplifiedShow = {
 
 type Show = SimplifiedShow & {
   episodes: Page<SimplifiedEpisode>;
-};
-
-type Shows = {
-  shows: Show[];
 };
 
 type SavedShow = {
@@ -316,10 +292,6 @@ type Track = SimplifiedTrack & {
   album: SimplifiedAlbum;
   external_ids: ExternalIds;
   popularity: number;
-};
-
-type Tracks = {
-  tracks: Track[];
 };
 
 type TopTracksResult = {
@@ -580,10 +552,6 @@ type Device = {
   name: string;
   type: string;
   volume_percent: number | null;
-};
-
-type Devices = {
-  devices: Device[];
 };
 
 type Context = {
