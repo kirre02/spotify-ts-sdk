@@ -1,4 +1,4 @@
-type Page<TItemType> = {
+export type Page<TItemType> = {
   href: string;
   items: TItemType[];
   limit: number;
@@ -65,7 +65,7 @@ type SimplifiedArtist = {
   uri: string;
 };
 
-type Artist = SimplifiedArtist & {
+export type Artist = SimplifiedArtist & {
   followers: Followers;
   genres: string[];
   images: Image[];
@@ -97,7 +97,7 @@ type AlbumBase = {
   uri: string;
 };
 
-type SimplifiedAlbum = AlbumBase & {
+export type SimplifiedAlbum = AlbumBase & {
   album_group: string;
   artists: SimplifiedArtist[];
 };
@@ -288,7 +288,7 @@ type SavedTrack = {
   track: Track;
 };
 
-type Track = SimplifiedTrack & {
+export type Track = SimplifiedTrack & {
   album: SimplifiedAlbum;
   external_ids: ExternalIds;
   popularity: number;
