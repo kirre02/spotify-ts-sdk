@@ -1,39 +1,33 @@
-import { Effect } from "effect";
+import { Config, Effect, Schema } from "effect";
+import { FetchError, JsonError } from "../errors";
 
 export interface IEntity<T> {
   get(id: string): Promise<T>;
   getMany(ids: string): Promise<T[]>;
 }
 
-export function makeRequest<T>(
-  route: string,
-  apiKey: string,
-): Effect.Effect<T, Error> {
-  return Effect.tryPromise({
-    try: async () => {
-      Effect.log(`Handling fetch for route: ${route}`);
-      const response = await fetch(`https://api.spotify.com/v1/${route}`, {
-        headers: { Authorization: `Bearer ${apiKey}` },
-      });
+export function makeRequest(route: string, schema: Schema.Schema<any>) {
+  return Effect.gen(function* () {
+    const baseUrl = "https://api.spotify.com/v1/";
+    const response = yield* Effect.tryPromise({
+      try: () =>
+        fetch(`${baseUrl}${route}`, {
+          headers: {
+            Authorization: `Bearer ${yield* Config.redacted("SPOTIFY_API_KEY")}`,
+          },
+        }),
+      catch: () => new FetchError(),
+    });
 
-      if (!response.ok) {
-        throw new Error(
-          `Error in services/makeRequest: ${response.statusText}`,
-        );
-      }
+    if (!response.ok) {
+      return yield* new FetchError();
+    }
 
-      return (await response.json()) as T;
-    },
-    catch: (error) => {
-      const handledError = error as Error;
-      Effect.log(
-        `Unknown error while fetching route: ${route}`,
-        "Message:",
-        handledError.message,
-        "Trace:",
-        handledError.stack,
-      );
-      return handledError;
-    },
+    const json = yield* Effect.tryPromise({
+      try: () => response.json(),
+      catch: () => new JsonError(),
+    });
+
+    return yield* Schema.decodeUnknown(schema)(json);
   });
 }
