@@ -84,22 +84,4 @@ class ArtistService
       }),
     );
   }
-
-  /**
-   * Get Spotify catalog information about artists similar to a given artist.
-   * Similarity is based on analysis of the Spotify community's listening history.
-   *
-   * @param {string} artistId - The Spotify ID of the artist.
-   * Example: `"0TnOYISbd1XYRBk9myaseg"`
-   *
-   * @returns {Artist[]} A set of artists
-   */
-  getRelatedArtists(artistId: string): Promise<Artist[]> {
-    return Effect.runPromise(
-      makeRequest(
-        `artists/${artistId}/related-artists`,
-        Schema.Array(ArtistSchema),
-      ),
-    );
-  }
 }
