@@ -170,20 +170,14 @@ const ResumePointSchema = S.Struct({
 
 type ResumePoint = S.Schema.Type<typeof ResumePointSchema>;
 
-const CategorySchema = S.Struct({
+export const CategorySchema = S.Struct({
   href: S.String,
   icons: S.Array(ImageSchema),
   id: S.String,
   name: S.String,
 });
 
-type Category = S.Schema.Type<typeof CategorySchema>;
-
-const CategoriesSchema = S.Struct({
-  categories: PageSchema(CategorySchema),
-});
-
-type Categories = S.Schema.Type<typeof CategoriesSchema>;
+export type Category = S.Schema.Type<typeof CategorySchema>;
 
 export const SimplifiedChapterSchema = S.Struct({
   available_markets: S.Array(S.String),
