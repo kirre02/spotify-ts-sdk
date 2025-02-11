@@ -212,14 +212,14 @@ export const AudiobookSchema = S.extend(
 
 export type Audiobook = S.Schema.Type<typeof AudiobookSchema>;
 
-const ChapterSchema = S.extend(
+export const ChapterSchema = S.extend(
   SimplifiedChapterSchema,
   S.Struct({
     audiobook: SimplifiedAudiobookSchema,
   }),
 );
 
-type Chapter = S.Schema.Type<typeof ChapterSchema>;
+export type Chapter = S.Schema.Type<typeof ChapterSchema>;
 
 const SimplifiedEpisodeSchema = S.Struct({
   description: S.String,
