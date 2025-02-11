@@ -185,7 +185,7 @@ const CategoriesSchema = S.Struct({
 
 type Categories = S.Schema.Type<typeof CategoriesSchema>;
 
-const SimplifiedChapterSchema = S.Struct({
+export const SimplifiedChapterSchema = S.Struct({
   available_markets: S.Array(S.String),
   chapter_number: S.Number,
   description: S.String,
@@ -207,16 +207,16 @@ const SimplifiedChapterSchema = S.Struct({
   restrictions: RestrictionsSchema,
 });
 
-type SimplifiedChapter = S.Schema.Type<typeof SimplifiedChapterSchema>;
+export type SimplifiedChapter = S.Schema.Type<typeof SimplifiedChapterSchema>;
 
-const AudiobookSchema = S.extend(
+export const AudiobookSchema = S.extend(
   SimplifiedAudiobookSchema,
   S.Struct({
     chapters: PageSchema(SimplifiedChapterSchema),
   }),
 );
 
-type Audiobook = S.Schema.Type<typeof AudiobookSchema>;
+export type Audiobook = S.Schema.Type<typeof AudiobookSchema>;
 
 const ChapterSchema = S.extend(
   SimplifiedChapterSchema,
