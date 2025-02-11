@@ -328,7 +328,7 @@ const SimplifiedTrackSchema = S.Struct({
 
 type SimplifiedTrack = S.Schema.Type<typeof SimplifiedTrackSchema>;
 
-const AlbumSchema = S.extend(
+export const AlbumSchema = S.extend(
   AlbumBaseSchema,
   S.Struct({
     artists: S.Array(ArtistSchema),
@@ -336,7 +336,7 @@ const AlbumSchema = S.extend(
   }),
 );
 
-type Album = S.Schema.Type<typeof AlbumSchema>;
+export type Album = S.Schema.Type<typeof AlbumSchema>;
 
 const SavedAlbumSchema = S.Struct({
   added_at: S.String,
