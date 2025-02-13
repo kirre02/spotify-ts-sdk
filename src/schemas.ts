@@ -669,7 +669,7 @@ const ActionsSchema = S.Struct({
 
 type Actions = S.Schema.Type<typeof ActionsSchema>;
 
-const DeviceSchema = S.Struct({
+export const DeviceSchema = S.Struct({
   id: S.NullOr(S.String),
   is_active: S.Boolean,
   is_private_session: S.Boolean,
@@ -679,7 +679,7 @@ const DeviceSchema = S.Struct({
   volume_percent: S.NullOr(S.Number),
 });
 
-type Device = S.Schema.Type<typeof DeviceSchema>;
+export type Device = S.Schema.Type<typeof DeviceSchema>;
 
 const ContextSchema = S.Struct({
   type: S.String,
@@ -690,7 +690,7 @@ const ContextSchema = S.Struct({
 
 type Context = S.Schema.Type<typeof ContextSchema>;
 
-const PlaybackStateSchema = S.Struct({
+export const PlaybackStateSchema = S.Struct({
   device: DeviceSchema,
   repeat_state: S.String,
   shuffle_state: S.Boolean,
@@ -703,15 +703,15 @@ const PlaybackStateSchema = S.Struct({
   actions: ActionsSchema,
 });
 
-type PlayBackState = S.Schema.Type<typeof PlaybackStateSchema>;
+export type PlaybackState = S.Schema.Type<typeof PlaybackStateSchema>;
 
-const PlayHistorySchema = S.Struct({
+export const PlayHistorySchema = S.Struct({
   track: TrackSchema,
   played_at: S.String,
   context: ContextSchema,
 });
 
-type PlayHistory = S.Schema.Type<typeof PlayHistorySchema>;
+export type PlayHistory = S.Schema.Type<typeof PlayHistorySchema>;
 
 const RecentlyPlayedTracksSchema = S.Struct({
   href: S.String,
@@ -727,9 +727,9 @@ const RecentlyPlayedTracksSchema = S.Struct({
 
 type RecentlyPlayedTracks = S.Schema.Type<typeof RecentlyPlayedTracksSchema>;
 
-const QueueSchema = S.Struct({
+export const QueueSchema = S.Struct({
   currently_playing: S.NullOr(TrackItemSchema),
   queue: S.Array(TrackItemSchema),
 });
 
-type Queue = S.Schema.Type<typeof QueueSchema>;
+export type Queue = S.Schema.Type<typeof QueueSchema>;
