@@ -20,13 +20,13 @@ const CopyrightSchema = S.Struct({
 
 type Copyright = S.Schema.Type<typeof CopyrightSchema>;
 
-const ImageSchema = S.Struct({
+export const ImageSchema = S.Struct({
   url: S.String,
   height: S.Number,
   width: S.Number,
 });
 
-type Image = S.Schema.Type<typeof ImageSchema>;
+export type Image = S.Schema.Type<typeof ImageSchema>;
 
 const RestrictionsSchema = S.Struct({
   reason: S.String,
@@ -572,7 +572,7 @@ const TrackItemSchema = S.Union(TrackSchema, EpisodeSchema);
 
 type TrackItem = S.Schema.Type<typeof TrackItemSchema>;
 
-const PlaylistedTrackSchema = S.Struct({
+export const PlaylistTrackSchema = S.Struct({
   added_at: S.String,
   added_by: AddedBySchema,
   is_local: S.Boolean,
@@ -580,16 +580,16 @@ const PlaylistedTrackSchema = S.Struct({
   track: TrackItemSchema,
 });
 
-type PlaylistedTrack = S.Schema.Type<typeof PlaylistedTrackSchema>;
+export type PlaylistTrack = S.Schema.Type<typeof PlaylistTrackSchema>;
 
-const PlaylistSchema = S.extend(
+export const PlaylistSchema = S.extend(
   PlaylistBaseSchema,
   S.Struct({
-    tracks: PageSchema(PlaylistedTrackSchema),
+    tracks: PageSchema(PlaylistTrackSchema),
   }),
 );
 
-type Playlist = S.Schema.Type<typeof PlaylistSchema>;
+export type Playlist = S.Schema.Type<typeof PlaylistSchema>;
 
 const TrackReferenceSchema = S.Struct({
   href: S.String,
@@ -598,14 +598,14 @@ const TrackReferenceSchema = S.Struct({
 
 type TrackReference = S.Schema.Type<typeof TrackReferenceSchema>;
 
-const SimplifiedPlaylistSchema = S.extend(
+export const SimplifiedPlaylistSchema = S.extend(
   PlaylistBaseSchema,
   S.Struct({
     tracks: S.NullOr(TrackReferenceSchema),
   }),
 );
 
-type SimplifiedPlaylist = S.Schema.Type<typeof SimplifiedPlaylistSchema>;
+export type SimplifiedPlaylist = S.Schema.Type<typeof SimplifiedPlaylistSchema>;
 
 const SearchResultsMapSchema = S.Struct({
   albums: SimplifiedAlbumSchema,
