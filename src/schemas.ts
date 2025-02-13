@@ -267,14 +267,14 @@ const SimplifiedShowSchema = S.Struct({
 
 type SimplifiedShow = S.Schema.Type<typeof SimplifiedShowSchema>;
 
-const EpisodeSchema = S.extend(
+export const EpisodeSchema = S.extend(
   SimplifiedEpisodeSchema,
   S.Struct({
     show: SimplifiedShowSchema,
   }),
 );
 
-type Episode = S.Schema.Type<typeof EpisodeSchema>;
+export type Episode = S.Schema.Type<typeof EpisodeSchema>;
 
 const SavedEpisodeSchema = S.Struct({
   added_at: S.String,
