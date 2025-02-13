@@ -28,7 +28,10 @@ class ArtistService
   get(artistId: string): Promise<Artist> {
     return Effect.runPromise(
       Effect.gen(function* () {
-        return yield* makeRequest(`artists/${artistId}`, ArtistSchema);
+        return yield* makeRequest(
+          `artists/${encodeURIComponent(artistId)}`,
+          ArtistSchema,
+        );
       }),
     );
   }
@@ -44,8 +47,13 @@ class ArtistService
   getMany(artistIds: string): Promise<Artist[]> {
     return Effect.runPromise(
       Effect.gen(function* () {
+        const encodedIds = artistIds
+          .split(",")
+          .map((id) => encodeURIComponent(id.trim()))
+          .join(",");
+
         return yield* makeRequest(
-          `artists?${artistIds}`,
+          `artists?ids=${encodedIds}`,
           Schema.Array(ArtistSchema),
         );
       }),
@@ -68,7 +76,7 @@ class ArtistService
     return Effect.runPromise(
       Effect.gen(function* () {
         return yield* makeRequest(
-          `artists/${artistId}/albums`,
+          `artists/${encodeURIComponent(artistId)}/albums`,
           PageSchema(SimplifiedAlbumSchema),
           options,
         );
@@ -92,7 +100,7 @@ class ArtistService
     return Effect.runPromise(
       Effect.gen(function* () {
         return yield* makeRequest(
-          `artists/${artistId}/top-tracks`,
+          `artists/${encodeURIComponent(artistId)}/top-tracks`,
           Schema.Array(TrackSchema),
           options,
         );

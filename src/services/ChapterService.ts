@@ -23,7 +23,7 @@ class ChapterService
     return Effect.runPromise(
       Effect.gen(function* () {
         return yield* makeRequest(
-          `chapters/${chapterId}`,
+          `chapters/${encodeURIComponent(chapterId)}`,
           ChapterSchema,
           options,
         );
@@ -43,8 +43,13 @@ class ChapterService
   getMany(chapterIds: string, options?: MarketOnlyOptions): Promise<Chapter[]> {
     return Effect.runPromise(
       Effect.gen(function* () {
+        const encodedIds = chapterIds
+          .split(",")
+          .map((id) => encodeURIComponent(id.trim()))
+          .join(",");
+
         return yield* makeRequest(
-          `chapters?${chapterIds}`,
+          `chapters?ids=${encodedIds}`,
           Schema.Array(ChapterSchema),
           options,
         );
