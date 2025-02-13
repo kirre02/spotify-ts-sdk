@@ -29,7 +29,7 @@ class AudiobookService
     return Effect.runPromise(
       Effect.gen(function* () {
         return yield* makeRequest(
-          `audiobooks/${audiobookId}`,
+          `audiobooks/${encodeURIComponent(audiobookId)}`,
           AudiobookSchema,
           options,
         );
@@ -53,8 +53,13 @@ class AudiobookService
   ): Promise<Audiobook[]> {
     return Effect.runPromise(
       Effect.gen(function* () {
+        const encodedIds = audiobookIds
+          .split(",")
+          .map((id) => encodeURIComponent(id.trim()))
+          .join(",");
+
         return yield* makeRequest(
-          `audiobooks?${audiobookIds}`,
+          `audiobooks?ids=${encodedIds}`,
           Schema.Array(AudiobookSchema),
           options,
         );
@@ -78,7 +83,7 @@ class AudiobookService
     return Effect.runPromise(
       Effect.gen(function* () {
         return yield* makeRequest(
-          `audiobooks/${audiobookId}/chapters`,
+          `audiobooks/${encodeURIComponent(audiobookId)}/chapters`,
           PageSchema(SimplifiedChapterSchema),
           options,
         );

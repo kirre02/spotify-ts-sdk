@@ -31,7 +31,7 @@ class AlbumService
     return Effect.runPromise(
       Effect.gen(function* () {
         return yield* makeRequest(
-          `albums/${albumId}`,
+          `albums/${encodeURIComponent(albumId)}`,
           AlbumSchema,
           options,
         );
@@ -51,8 +51,13 @@ class AlbumService
   getMany(albumIds: string, options?: MarketOnlyOptions): Promise<Album[]> {
     return Effect.runPromise(
       Effect.gen(function* () {
+        const encodedIds = albumIds
+          .split(",")
+          .map((id) => encodeURIComponent(id.trim()))
+          .join(",");
+
         return yield* makeRequest(
-          `albums?${albumIds}`,
+          `albums?ids=${encodedIds}`,
           Schema.Array(AlbumSchema),
           options,
         );
@@ -76,7 +81,7 @@ class AlbumService
     return Effect.runPromise(
       Effect.gen(function* () {
         return yield* makeRequest(
-          `albums/${albumId}/tracks`,
+          `albums/${encodeURIComponent(albumId)}/tracks`,
           PageSchema(TrackSchema),
           options,
         );

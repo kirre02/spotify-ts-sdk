@@ -21,7 +21,7 @@ class CategoryService extends Data.TaggedClass("CategoryService") {
     return Effect.runPromise(
       Effect.gen(function* () {
         return yield* makeRequest(
-          `browse/categories/${categoryId}`,
+          `browse/categories/${encodeURIComponent(categoryId)}`,
           CategorySchema,
           options,
         );
