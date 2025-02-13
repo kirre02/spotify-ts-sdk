@@ -5,7 +5,12 @@ import {
   TrackSchema,
 } from "../schemas.js";
 import type { Artist, Page, SimplifiedAlbum, Track } from "../schemas.js";
-import { type IEntity, makeRequest } from "./EntityService.js";
+import {
+  type AlbumRetrievalOptions,
+  type IEntity,
+  makeRequest,
+  type MarketOnlyOptions,
+} from "./EntityService.js";
 import { Effect, Data, Schema } from "effect";
 
 class ArtistService
@@ -52,15 +57,20 @@ class ArtistService
    *
    * @param {string} artistId - The Spotify ID of the artist.
    * Example: `"0TnOYISbd1XYRBk9myaseg"`
+   * @param {AlbumRetrievalOptions} [options] - Optional filter parameters
    *
    * @returns {Promise<Page<SimplifiedAlbum>>} Pages of albums
    */
-  getAlbums(artistId: string): Promise<Page<SimplifiedAlbum>> {
+  getAlbums(
+    artistId: string,
+    options?: AlbumRetrievalOptions,
+  ): Promise<Page<SimplifiedAlbum>> {
     return Effect.runPromise(
       Effect.gen(function* () {
         return yield* makeRequest(
           `artists/${artistId}/albums`,
           PageSchema(SimplifiedAlbumSchema),
+          options,
         );
       }),
     );
@@ -71,15 +81,20 @@ class ArtistService
    *
    * @param {string} artistId - The Spotify ID of the artist.
    * Example: `"0TnOYISbd1XYRBk9myaseg"`
+   * @param {MarketOnlyOptions} [options] - Optional filter parameters
    *
    * @returns {Track[]} A set of tracks
    */
-  getTopTracks(artistId: string): Promise<Track[]> {
+  getTopTracks(
+    artistId: string,
+    options?: MarketOnlyOptions,
+  ): Promise<Track[]> {
     return Effect.runPromise(
       Effect.gen(function* () {
         return yield* makeRequest(
           `artists/${artistId}/top-tracks`,
           Schema.Array(TrackSchema),
+          options,
         );
       }),
     );

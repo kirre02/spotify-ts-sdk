@@ -1,5 +1,9 @@
 import { Data, Effect, Schema } from "effect";
-import { makeRequest, type IEntity } from "./EntityService";
+import {
+  makeRequest,
+  type IEntity,
+  type MarketOnlyOptions,
+} from "./EntityService";
 import { ChapterSchema, type Chapter } from "../schemas";
 
 class ChapterService
@@ -11,13 +15,18 @@ class ChapterService
    *
    * @param {string} chapterId - The Spotify ID for the chapter
    * Example: `"0D5wENdkdwbqlrHoaJ9g29"`
+   * @param {MarketOnlyOptions} [options] - Optional filter parameters
    *
    * @returns {Promise<Chapter>}
    */
-  get(chapterId: string): Promise<Chapter> {
+  get(chapterId: string, options?: MarketOnlyOptions): Promise<Chapter> {
     return Effect.runPromise(
       Effect.gen(function* () {
-        return yield* makeRequest(`chapters/${chapterId}`, ChapterSchema);
+        return yield* makeRequest(
+          `chapters/${chapterId}`,
+          ChapterSchema,
+          options,
+        );
       }),
     );
   }
@@ -27,15 +36,17 @@ class ChapterService
    *
    * @param {string} chapterIds - A comma-separated list of the Spotify IDs. Maximum: 50 IDs.
    * Example: `"0IsXVP0JmcB2adSE338GkK,3ZXb8FKZGU0EHALYX6uCzU,0D5wENdkdwbqlrHoaJ9g29"`
+   * @param {MarketOnlyOptions} [options] - Optional filter parameters
    *
    * @returns {Promise<Chapter[]>}
    */
-  getMany(chapterIds: string): Promise<Chapter[]> {
+  getMany(chapterIds: string, options?: MarketOnlyOptions): Promise<Chapter[]> {
     return Effect.runPromise(
       Effect.gen(function* () {
         return yield* makeRequest(
           `chapters?${chapterIds}`,
           Schema.Array(ChapterSchema),
+          options,
         );
       }),
     );
