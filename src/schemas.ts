@@ -607,7 +607,7 @@ export const SimplifiedPlaylistSchema = S.extend(
 
 export type SimplifiedPlaylist = S.Schema.Type<typeof SimplifiedPlaylistSchema>;
 
-const SearchResultsMapSchema = S.Struct({
+export const SearchResultsMapSchema = S.Struct({
   albums: SimplifiedAlbumSchema,
   artists: ArtistSchema,
   tracks: TrackSchema,
@@ -617,7 +617,7 @@ const SearchResultsMapSchema = S.Struct({
   audiobooks: SimplifiedAudiobookSchema,
 });
 
-type SearchResults = S.Schema.Type<typeof SearchResultsMapSchema>;
+export type SearchResults = S.Schema.Type<typeof SearchResultsMapSchema>;
 
 const FeaturedPlaylistsSchema = S.Struct({
   message: S.String,
