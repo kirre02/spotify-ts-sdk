@@ -304,7 +304,6 @@ const SimplifiedTrackSchema = S.Struct({
   available_markets: S.Array(S.String),
   disc_number: S.Number,
   duration_ms: S.Number,
-  episode: S.Boolean,
   explicit: S.Boolean,
   external_urls: ExternalUrlsSchema,
   href: S.String,
@@ -362,12 +361,12 @@ export const TrackSchema = S.extend(
 
 export type Track = S.Schema.Type<typeof TrackSchema>;
 
-const SavedTrackSchema = S.Struct({
+export const SavedTrackSchema = S.Struct({
   added_at: S.String,
   track: TrackSchema,
 });
 
-type SavedTrack = S.Schema.Type<typeof SavedTrackSchema>;
+export type SavedTrack = S.Schema.Type<typeof SavedTrackSchema>;
 
 const AudioFeaturesSchema = S.Struct({
   acousticness: S.Number,
