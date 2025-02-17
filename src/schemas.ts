@@ -221,7 +221,7 @@ export const ChapterSchema = S.extend(
 
 export type Chapter = S.Schema.Type<typeof ChapterSchema>;
 
-const SimplifiedEpisodeSchema = S.Struct({
+export const SimplifiedEpisodeSchema = S.Struct({
   description: S.String,
   html_description: S.String,
   duration_ms: S.Number,
@@ -243,9 +243,9 @@ const SimplifiedEpisodeSchema = S.Struct({
   restrictions: RestrictionsSchema,
 });
 
-type SimplifiedEpisode = S.Schema.Type<typeof SimplifiedEpisodeSchema>;
+export type SimplifiedEpisode = S.Schema.Type<typeof SimplifiedEpisodeSchema>;
 
-const SimplifiedShowSchema = S.Struct({
+export const SimplifiedShowSchema = S.Struct({
   available_markets: S.Array(S.String),
   copyrights: S.Array(CopyrightSchema),
   description: S.String,
@@ -265,7 +265,7 @@ const SimplifiedShowSchema = S.Struct({
   total_episodes: S.Number,
 });
 
-type SimplifiedShow = S.Schema.Type<typeof SimplifiedShowSchema>;
+export type SimplifiedShow = S.Schema.Type<typeof SimplifiedShowSchema>;
 
 export const EpisodeSchema = S.extend(
   SimplifiedEpisodeSchema,
@@ -283,21 +283,21 @@ const SavedEpisodeSchema = S.Struct({
 
 type SavedEpisode = S.Schema.Type<typeof SavedEpisodeSchema>;
 
-const ShowSchema = S.extend(
+export const ShowSchema = S.extend(
   SimplifiedShowSchema,
   S.Struct({
     episodes: PageSchema(SimplifiedEpisodeSchema),
   }),
 );
 
-type Show = S.Schema.Type<typeof ShowSchema>;
+export type Show = S.Schema.Type<typeof ShowSchema>;
 
-const SavedShowSchema = S.Struct({
+export const SavedShowSchema = S.Struct({
   added_at: S.String,
   show: SimplifiedShowSchema,
 });
 
-type SavedShow = S.Schema.Type<typeof SavedShowSchema>;
+export type SavedShow = S.Schema.Type<typeof SavedShowSchema>;
 
 const SimplifiedTrackSchema = S.Struct({
   artists: S.Array(SimplifiedArtistSchema),
