@@ -15,13 +15,21 @@ class SearchService extends Data.TaggedClass("SearchService") {
    */
   search(
     query: string,
-    type: string[],
+    type: (
+      | "album"
+      | "artist"
+      | "playlist"
+      | "track"
+      | "show"
+      | "episode"
+      | "audiobook"
+    )[],
     options?: MarketExternalOptions,
   ): Promise<SearchResults> {
     return Effect.runPromise(
       Effect.gen(function* () {
         return yield* makeRequest(
-          `search?q=${encodeURIComponent(query)}&type=${encodeURIComponent(type.join(","))}`,
+          `search?q=${encodeURIComponent(query)}&type=${encodeURIComponent(type.toString())}`,
           SearchResultsMapSchema,
           options,
         );
