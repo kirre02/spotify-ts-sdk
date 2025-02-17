@@ -88,6 +88,20 @@ export const ArtistSchema = S.extend(
 
 export type Artist = S.Schema.Type<typeof ArtistSchema>;
 
+export const FollowedArtistSchema = S.Struct({
+  href: S.String,
+  limit: S.Number,
+  next: S.NullOr(S.String),
+  cursors: S.Struct({
+    after: S.String,
+    before: S.String,
+  }),
+  total: S.Number,
+  items: S.Array(ArtistSchema),
+});
+
+export type FollowedArtist = S.Schema.Type<typeof FollowedArtistSchema>;
+
 const AlbumBaseSchema = S.Struct({
   album_type: S.String,
   available_markets: S.Array(S.String),
@@ -625,7 +639,7 @@ const FeaturedPlaylistsSchema = S.Struct({
 
 type FeaturedPlaylists = S.Schema.Type<typeof FeaturedPlaylistsSchema>;
 
-const UserSchema = S.Struct({
+export const UserSchema = S.Struct({
   display_name: S.String,
   email: S.String,
   external_urls: ExternalUrlsSchema,
@@ -637,7 +651,7 @@ const UserSchema = S.Struct({
   uri: S.String,
 });
 
-type User = S.Schema.Type<typeof UserSchema>;
+export type User = S.Schema.Type<typeof UserSchema>;
 
 const UserProfileSchema = S.extend(
   UserSchema,
