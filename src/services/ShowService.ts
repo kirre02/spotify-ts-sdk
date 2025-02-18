@@ -113,4 +113,28 @@ class ShowService extends Data.TaggedClass("ShowService") {
       }),
     );
   }
+
+  /**
+   * Check if one or more shows is already saved in the current Spotify user's library
+   *
+   * @param {string} showIds - A comma-separated list of the Spotify IDs for the shows. Maximum: 50 IDs
+   * Example: `"5CfCWKI5pZ28U0uOzXkDHe,5as3aKmN2k11yfDDDSrvaZ"`
+   *
+   * @returns {Promise<boolean[]>} Array of booleans
+   */
+  checkSaved(showIds: string): Promise<boolean[]> {
+    return Effect.runPromise(
+      Effect.gen(function* () {
+        const encodedIds = showIds
+          .split(",")
+          .map((id) => encodeURIComponent(id.trim()))
+          .join(",");
+
+        return yield* makeRequest(
+          `me/shows/contains?${encodedIds}`,
+          Schema.Array(Schema.Boolean),
+        );
+      }),
+    );
+  }
 }

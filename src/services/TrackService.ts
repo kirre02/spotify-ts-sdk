@@ -69,9 +69,33 @@ class TrackService
     return Effect.runPromise(
       Effect.gen(function* () {
         return yield* makeRequest(
-          `me/tracks`,
+          "me/tracks",
           PageSchema(SavedTrackSchema),
           options,
+        );
+      }),
+    );
+  }
+
+  /**
+   * Check if one or more tracks is already saved in the current Spotify user's 'Your Music' library
+   *
+   * @param {string} trackIds - A comma-separated list of the Spotify IDs. Maximum: 50 IDs
+   * Example: `"7ouMYWpwJ422jRcDASZB7P,4VqPOruhp5EdPBeR92t6lQ,2takcwOaAZWiXQijPHIx7B"`
+   *
+   * @returns {Promise<boolean[]>} Array of booleans
+   */
+  checkSaved(trackIds: string): Promise<boolean[]> {
+    return Effect.runPromise(
+      Effect.gen(function* () {
+        const encodedIds = trackIds
+          .split(",")
+          .map((id) => encodeURIComponent(id.trim()))
+          .join(",");
+
+        return yield* makeRequest(
+          `me/tracks/contains?${encodedIds}`,
+          Schema.Array(Schema.Boolean),
         );
       }),
     );
