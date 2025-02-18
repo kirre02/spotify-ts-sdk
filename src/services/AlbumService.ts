@@ -6,10 +6,17 @@ import {
   type PaginatedMarketOptions,
   type PaginationOptions,
 } from "./EntityService";
-import type { Album, Page, SimplifiedAlbum, Track } from "../schemas";
+import type {
+  Album,
+  Page,
+  SavedAlbum,
+  SimplifiedAlbum,
+  Track,
+} from "../schemas";
 import {
   AlbumSchema,
   PageSchema,
+  SavedAlbumSchema,
   SimplifiedAlbumSchema,
   TrackSchema,
 } from "../schemas";
@@ -84,6 +91,49 @@ class AlbumService
           `albums/${encodeURIComponent(albumId)}/tracks`,
           PageSchema(TrackSchema),
           options,
+        );
+      }),
+    );
+  }
+
+  /**
+   * Get a list of albums saved in the current Spotify user's 'Your Music' library
+   *
+   * @param {PaginatedMarketOptions} [options] - Optional filter parameters
+   *
+   * @returns {Promise<Page<SavedAlbum>>} Pages of albums
+   */
+  getSaved(options?: PaginatedMarketOptions): Promise<Page<SavedAlbum>> {
+    return Effect.runPromise(
+      Effect.gen(function* () {
+        return yield* makeRequest(
+          "me/albums",
+          PageSchema(SavedAlbumSchema),
+          options,
+        );
+      }),
+    );
+  }
+
+  /**
+   * Check if one or more albums is already saved in the current Spotify user's 'Your Music' library
+   *
+   * @param {string} albumIds - A comma-separated list of the Spotify IDs for the albums. Maximum: 20 IDs
+   * Example: `"382ObEPsp2rxGrnsizN5TX,1A2GTWGtFfWp7KSQTwWOyo,2noRn2Aes5aoNVsU6iWThc"`
+   *
+   * @returns {Promise<boolean[]>} Array of booleans
+   */
+  checkSaved(albumIds: string): Promise<boolean[]> {
+    return Effect.runPromise(
+      Effect.gen(function* () {
+        const encodedIds = albumIds
+          .split(",")
+          .map((id) => encodeURIComponent(id.trim()))
+          .join(",");
+
+        return yield* makeRequest(
+          `me/albums/contains?ids=${encodedIds}`,
+          Schema.Array(Schema.Boolean),
         );
       }),
     );

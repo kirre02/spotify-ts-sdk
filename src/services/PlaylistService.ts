@@ -94,7 +94,7 @@ class PlaylistService extends Data.TaggedClass("PlaylistService") {
    *
    * @returns {Promise<Page<SimplifiedPlaylist>>} A paged set of playlists
    */
-  getUserPlaylists(
+  getUsersPlaylists(
     userId: string,
     options?: PaginationOptions,
   ): Promise<Page<SimplifiedPlaylist>> {

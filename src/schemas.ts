@@ -153,7 +153,7 @@ const NarratorSchema = S.Struct({
 
 type Narrator = S.Schema.Type<typeof NarratorSchema>;
 
-const SimplifiedAudiobookSchema = S.Struct({
+export const SimplifiedAudiobookSchema = S.Struct({
   authors: S.Array(AuthorSchema),
   available_markets: S.Array(S.String),
   copyrights: S.Array(CopyrightSchema),
@@ -175,7 +175,9 @@ const SimplifiedAudiobookSchema = S.Struct({
   uri: S.String,
 });
 
-type SimplifiedAudiobook = S.Schema.Type<typeof SimplifiedAudiobookSchema>;
+export type SimplifiedAudiobook = S.Schema.Type<
+  typeof SimplifiedAudiobookSchema
+>;
 
 const ResumePointSchema = S.Struct({
   fully_played: S.Boolean,
@@ -290,12 +292,12 @@ export const EpisodeSchema = S.extend(
 
 export type Episode = S.Schema.Type<typeof EpisodeSchema>;
 
-const SavedEpisodeSchema = S.Struct({
+export const SavedEpisodeSchema = S.Struct({
   added_at: S.String,
   episode: EpisodeSchema,
 });
 
-type SavedEpisode = S.Schema.Type<typeof SavedEpisodeSchema>;
+export type SavedEpisode = S.Schema.Type<typeof SavedEpisodeSchema>;
 
 export const ShowSchema = S.extend(
   SimplifiedShowSchema,
@@ -345,12 +347,12 @@ export const AlbumSchema = S.extend(
 
 export type Album = S.Schema.Type<typeof AlbumSchema>;
 
-const SavedAlbumSchema = S.Struct({
+export const SavedAlbumSchema = S.Struct({
   added_at: S.String,
   album: AlbumSchema,
 });
 
-type SavedAlbum = S.Schema.Type<typeof SavedAlbumSchema>;
+export type SavedAlbum = S.Schema.Type<typeof SavedAlbumSchema>;
 
 const AlbumTrackSchema = S.Struct({
   href: S.String,

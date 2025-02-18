@@ -4,11 +4,18 @@ import {
   type IEntity,
   type MarketOnlyOptions,
   type PaginatedMarketOptions,
+  type PaginationOptions,
 } from "./EntityService";
-import type { Audiobook, Page, SimplifiedChapter } from "../schemas";
+import type {
+  Audiobook,
+  Page,
+  SimplifiedAudiobook,
+  SimplifiedChapter,
+} from "../schemas";
 import {
   AudiobookSchema,
   PageSchema,
+  SimplifiedAudiobookSchema,
   SimplifiedChapterSchema,
 } from "../schemas";
 
@@ -86,6 +93,49 @@ class AudiobookService
           `audiobooks/${encodeURIComponent(audiobookId)}/chapters`,
           PageSchema(SimplifiedChapterSchema),
           options,
+        );
+      }),
+    );
+  }
+
+  /**
+   * Get a list of the audiobooks saved in the current Spotify user's 'Your Music' library
+   *
+   * @param {PaginationOptions} [options] - Optional filter parameters
+   *
+   * @returns {Promise<Page<SimplifiedAudiobook>>} Pages of audiobooks
+   */
+  getSaved(options?: PaginationOptions): Promise<Page<SimplifiedAudiobook>> {
+    return Effect.runPromise(
+      Effect.gen(function* () {
+        return yield* makeRequest(
+          "me/audiobooks",
+          PageSchema(SimplifiedAudiobookSchema),
+          options,
+        );
+      }),
+    );
+  }
+
+  /**
+   * Check if one or more audiobooks are already saved in the current Spotify user's library
+   *
+   * @param {string} audiobookIds - A comma-separated list of the Spotify IDs. Maximum: 50 IDs
+   * Example: `"18yVqkdbdRvS24c0Ilj2ci,1HGw3J3NxZO1TP1BTtVhpZ,7iHfbu1YPACw6oZPAFJtqe"`
+   *
+   * @returns {Promise<boolean[]>} Array of booleans
+   */
+  checkSaved(audiobookIds: string): Promise<boolean[]> {
+    return Effect.runPromise(
+      Effect.gen(function* () {
+        const encodedIds = audiobookIds
+          .split(",")
+          .map((id) => encodeURIComponent(id.trim()))
+          .join(",");
+
+        return yield* makeRequest(
+          `me/audiobooks/contains?ids=${encodedIds}`,
+          Schema.Array(Schema.Boolean),
         );
       }),
     );
