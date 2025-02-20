@@ -18,7 +18,7 @@ class ChapterService
    * Example: `"0D5wENdkdwbqlrHoaJ9g29"`
    * @param {MarketOnlyOptions} [params.options] - Optional filter parameters
    *
-   * @returns {Promise<Chapter>}
+   * @returns {Promise<Chapter>} A chapter
    */
   get({
     id,
@@ -46,7 +46,7 @@ class ChapterService
    * Example: `"0IsXVP0JmcB2adSE338GkK,3ZXb8FKZGU0EHALYX6uCzU,0D5wENdkdwbqlrHoaJ9g29"`
    * @param {MarketOnlyOptions} [params.options] - Optional filter parameters
    *
-   * @returns {Promise<Chapter[]>}
+   * @returns {Promise<Chapter[]>} A set of chapters
    */
   getMany({
     ids,
