@@ -24,17 +24,24 @@ class ShowService extends Data.TaggedClass("ShowService") {
   /**
    * Get Spotify catalog information for a single show identified by its unique Spotify ID
    *
-   * @param {string} showId - The Spotify ID for the show
+   * @param {Object} params - The params object
+   * @param {string} params.id - The Spotify ID for the show
    * Example: `"38bS44xjbVVZ3No3ByF1dJ`
-   * @param {MarketOnlyOptions} [options] - Optional filter parameters
+   * @param {MarketOnlyOptions} [params.options] - Optional filter parameters
    *
    * @returns {Promise<Show>} A show
    */
-  get(showId: string, options?: MarketOnlyOptions): Promise<Show> {
+  get({
+    id,
+    options,
+  }: {
+    id: string;
+    options?: MarketOnlyOptions;
+  }): Promise<Show> {
     return Effect.runPromise(
       Effect.gen(function* () {
         return yield* makeRequest(
-          `shows/${encodeURIComponent(showId)}`,
+          `shows/${encodeURIComponent(id)}`,
           ShowSchema,
           options,
         );
@@ -45,19 +52,23 @@ class ShowService extends Data.TaggedClass("ShowService") {
   /**
    * Get Spotify catalog information for several shows based on their Spotify IDs
    *
-   * @param {string} showIds - A comma-separated list of the Spotify IDs for the shows. Maximum: 50 IDs
+   * @param {Object} params - The params object
+   * @param {string} params.ids - A comma-separated list of the Spotify IDs for the shows. Maximum: 50 IDs
    * Example: `"5CfCWKI5pZ28U0uOzXkDHe,5as3aKmN2k11yfDDDSrvaZ`
-   * @param {MarketOnlyOptions} [options] - Optional filter parameters
+   * @param {MarketOnlyOptions} [params.options] - Optional filter parameters
    *
    * @returns {Promise<SimplifiedShow[]>} A set of shows
    */
-  getMany(
-    showIds: string,
-    options?: MarketOnlyOptions,
-  ): Promise<SimplifiedShow[]> {
+  getMany({
+    ids,
+    options,
+  }: {
+    ids: string;
+    options?: MarketOnlyOptions;
+  }): Promise<SimplifiedShow[]> {
     return Effect.runPromise(
       Effect.gen(function* () {
-        const encodedIds = showIds
+        const encodedIds = ids
           .split(",")
           .map((id) => encodeURIComponent(id.trim()))
           .join(",");
@@ -74,20 +85,24 @@ class ShowService extends Data.TaggedClass("ShowService") {
   /**
    * Get Spotify catalog information about an show's episodes.
    *
-   * @param {string} showId - The Spotify ID for the show
+   * @param {Object} params - The params object
+   * @param {string} params.id - The Spotify ID for the show
    * Example: `"38bS44xjbVVZ3No3ByF1dJ"`
-   * @param {PaginatedMarketOptions} [options] - Optional filter parameters
+   * @param {PaginatedMarketOptions} [params.options] - Optional filter parameters
    *
    * @returns {Promise<Page<SimplifiedEpisode>>} Pages of episodes
    */
-  getEpisodes(
-    showId: string,
-    options?: PaginatedMarketOptions,
-  ): Promise<Page<SimplifiedEpisode>> {
+  getEpisodes({
+    id,
+    options,
+  }: {
+    id: string;
+    options?: PaginatedMarketOptions;
+  }): Promise<Page<SimplifiedEpisode>> {
     return Effect.runPromise(
       Effect.gen(function* () {
         return yield* makeRequest(
-          `shows/${encodeURIComponent(showId)}/episodes`,
+          `shows/${encodeURIComponent(id)}/episodes`,
           PageSchema(SimplifiedEpisodeSchema),
           options,
         );
@@ -98,11 +113,16 @@ class ShowService extends Data.TaggedClass("ShowService") {
   /**
    * Get a list of shows saved in the current Spotify user's library.
    *
-   * @param {PaginationOptions} [options] - Optional filter parameters
+   * @param {Object} params - The params object
+   * @param {PaginationOptions} [params.options] - Optional filter parameters
    *
    * @returns {Promise<Page<SavedShow>>} Pages of shows
    */
-  getSaved(options?: PaginationOptions): Promise<Page<SavedShow>> {
+  getSaved({
+    options,
+  }: {
+    options?: PaginationOptions;
+  }): Promise<Page<SavedShow>> {
     return Effect.runPromise(
       Effect.gen(function* () {
         return yield* makeRequest(
@@ -117,15 +137,16 @@ class ShowService extends Data.TaggedClass("ShowService") {
   /**
    * Check if one or more shows is already saved in the current Spotify user's library
    *
-   * @param {string} showIds - A comma-separated list of the Spotify IDs for the shows. Maximum: 50 IDs
+   * @param {Object} params - The params object
+   * @param {string} params.ids - A comma-separated list of the Spotify IDs for the shows. Maximum: 50 IDs
    * Example: `"5CfCWKI5pZ28U0uOzXkDHe,5as3aKmN2k11yfDDDSrvaZ"`
    *
    * @returns {Promise<boolean[]>} Array of booleans
    */
-  checkSaved(showIds: string): Promise<boolean[]> {
+  checkSaved({ ids }: { ids: string }): Promise<boolean[]> {
     return Effect.runPromise(
       Effect.gen(function* () {
-        const encodedIds = showIds
+        const encodedIds = ids
           .split(",")
           .map((id) => encodeURIComponent(id.trim()))
           .join(",");
