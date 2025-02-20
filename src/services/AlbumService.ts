@@ -145,7 +145,8 @@ class AlbumService
    * @param {string} params.ids - A comma-separated list of the Spotify IDs for the albums. Maximum: 20 IDs
    * Example: `"382ObEPsp2rxGrnsizN5TX,1A2GTWGtFfWp7KSQTwWOyo,2noRn2Aes5aoNVsU6iWThc"`
    *
-   * @returns {Promise<boolean[]>} Array of booleans
+   * @returns {Promise<boolean[]>} Resolves to an array where each boolean indicates whether
+   * the corresponding index in `ids` is saved (`true`) or not (`false`).
    */
   checkSaved({ ids }: { ids: string }): Promise<boolean[]> {
     return Effect.runPromise(
@@ -169,7 +170,7 @@ class AlbumService
    * @param {Object} params - The params object
    * @param {PaginationOptions} [params.options] - Optional filter parameters
    *
-   * @returns {Promise<Page<SimplifiedAlbum>>}
+   * @returns {Promise<Page<SimplifiedAlbum>>} A paged set of albums
    */
   getNewReleases({
     options,

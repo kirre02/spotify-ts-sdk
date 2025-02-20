@@ -103,7 +103,8 @@ class TrackService
    * @param {string} params.ids - A comma-separated list of the Spotify IDs. Maximum: 50 IDs
    * Example: `"7ouMYWpwJ422jRcDASZB7P,4VqPOruhp5EdPBeR92t6lQ,2takcwOaAZWiXQijPHIx7B"`
    *
-   * @returns {Promise<boolean[]>} Array of booleans
+   * @returns {Promise<boolean[]>} Resolves to an array where each boolean indicates whether
+   * the corresponding index in `ids` is saved (`true`) or not (`false`).
    */
   checkSaved({ ids }: { ids: string }): Promise<boolean[]> {
     return Effect.runPromise(

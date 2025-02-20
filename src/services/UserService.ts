@@ -111,7 +111,8 @@ class UserService extends Data.TaggedClass("UserService") {
    * Example: `"2CIMQHirSU0MQqyYHq0eOx,57dN52uHvrHOxijzpIgu3E,1vCWHaC5f2uS3yhpwWbIA6"`
    * @param {"artist" | "user"} params.type - The ID type
    *
-   * @returns {Promise<boolean[]>} Array of booleans
+   * @returns {Promise<boolean[]>} Resolves to an array where each boolean indicates whether
+   * the corresponding index in `ids` is saved (`true`) or not (`false`).
    */
   checkFollowed({
     ids,
@@ -142,7 +143,8 @@ class UserService extends Data.TaggedClass("UserService") {
    * @param {string} params.id - The Spotify ID of the playlist
    * Example: `"3cEYpjA9oz9GiPac4AsH4n"`
    *
-   * @returns {Promise<boolean[]>} Array of boolean, containing a single boolean
+   * @returns {Promise<boolean[]>} Resolves to an array where each boolean indicates whether
+   * the corresponding index in `ids` is saved (`true`) or not (`false`).
    */
   isFollowingPlaylist({ id }: { id: string }): Promise<boolean[]> {
     return Effect.runPromise(

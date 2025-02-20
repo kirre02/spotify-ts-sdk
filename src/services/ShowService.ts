@@ -141,7 +141,8 @@ class ShowService extends Data.TaggedClass("ShowService") {
    * @param {string} params.ids - A comma-separated list of the Spotify IDs for the shows. Maximum: 50 IDs
    * Example: `"5CfCWKI5pZ28U0uOzXkDHe,5as3aKmN2k11yfDDDSrvaZ"`
    *
-   * @returns {Promise<boolean[]>} Array of booleans
+   * @returns {Promise<boolean[]>} Resolves to an array where each boolean indicates whether
+   * the corresponding index in `ids` is saved (`true`) or not (`false`).
    */
   checkSaved({ ids }: { ids: string }): Promise<boolean[]> {
     return Effect.runPromise(

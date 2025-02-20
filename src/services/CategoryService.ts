@@ -16,7 +16,7 @@ class CategoryService extends Data.TaggedClass("CategoryService") {
    * Example: `"dinner"`
    * @param {LocaleOnlyOptions} [params.options] - Optional filter parameters
    *
-   * @returns {Promise<Category>}
+   * @returns {Promise<Category>} A category
    */
   get({
     id,
@@ -42,7 +42,7 @@ class CategoryService extends Data.TaggedClass("CategoryService") {
    * @param {Object} params - The params object
    * @param {LocalizedPaginationOptions} [params.options] - Optional filter parameters
    *
-   * @returns {Promise<Page<Category>>}
+   * @returns {Promise<Page<Category>>} A paged set of categories
    */
   getMany({
     options,

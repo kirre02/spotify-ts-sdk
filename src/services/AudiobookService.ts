@@ -31,7 +31,7 @@ class AudiobookService
    * Example: `"7iHfbu1YPACw6oZPAFJtqe"`
    * @param {MarketOnlyOptions} [params.options] - Optional filter parameters
    *
-   * @returns {Promise<Audiobook>}
+   * @returns {Promise<Audiobook>} An Audiobook
    */
   get({
     id,
@@ -144,7 +144,8 @@ class AudiobookService
    * @param {string} params.ids - A comma-separated list of the Spotify IDs. Maximum: 50 IDs
    * Example: `"18yVqkdbdRvS24c0Ilj2ci,1HGw3J3NxZO1TP1BTtVhpZ,7iHfbu1YPACw6oZPAFJtqe"`
    *
-   * @returns {Promise<boolean[]>} Array of booleans
+   * @returns {Promise<boolean[]>} Resolves to an array where each boolean indicates whether
+   * the corresponding index in `ids` is saved (`true`) or not (`false`).
    */
   checkSaved({ ids }: { ids: string }): Promise<boolean[]> {
     return Effect.runPromise(
