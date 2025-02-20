@@ -15,17 +15,24 @@ class TrackService
   /**
    * Get Spotify catalog information for a single track identified by its unique Spotify ID
    *
-   * @param {string} trackId - The Spotify ID for the track
+   * @param {Object} params - The params object
+   * @param {string} params.id - The Spotify ID for the track
    * Example: `"11dFghVXANMlKmJXsNCbNl"`
-   * @param {MarketOnlyOptions} [options] - Optional filter parameters
+   * @param {MarketOnlyOptions} [params.options] - Optional filter parameters
    *
    * @returns {Promise<Track>} A track
    */
-  get(trackId: string, options?: MarketOnlyOptions): Promise<Track> {
+  get({
+    id,
+    options,
+  }: {
+    id: string;
+    options?: MarketOnlyOptions;
+  }): Promise<Track> {
     return Effect.runPromise(
       Effect.gen(function* () {
         return yield* makeRequest(
-          `tracks/${encodeURIComponent(trackId)}`,
+          `tracks/${encodeURIComponent(id)}`,
           TrackSchema,
           options,
         );
@@ -36,16 +43,23 @@ class TrackService
   /**
    * Get Spotify catalog information for multiple tracks based on their Spotify IDs
    *
-   * @param {string} trackIds - A comma-separated list of the Spotify IDs. Maximum: 50 IDs
+   * @param {Object} params - The params object
+   * @param {string} params.ids - A comma-separated list of the Spotify IDs. Maximum: 50 IDs
    * Example: `"7ouMYWpwJ422jRcDASZB7P,4VqPOruhp5EdPBeR92t6lQ,2takcwOaAZWiXQijPHIx7B"`
-   * @param {MarketOnlyOptions} [options] - Optional filter parameters
+   * @param {MarketOnlyOptions} [params.options] - Optional filter parameters
    *
    * @returns {Promise<Track[]>} A set of tracks
    */
-  getMany(trackIds: string, options?: MarketOnlyOptions): Promise<Track[]> {
+  getMany({
+    ids,
+    options,
+  }: {
+    ids: string;
+    options?: MarketOnlyOptions;
+  }): Promise<Track[]> {
     return Effect.runPromise(
       Effect.gen(function* () {
-        const encodedIds = trackIds
+        const encodedIds = ids
           .split(",")
           .map((id) => encodeURIComponent(id.trim()))
           .join(",");
@@ -61,11 +75,16 @@ class TrackService
   /**
    * Get a list of the songs saved in the current Spotify user's 'Your Music' library
    *
-   * @param {PaginatedMarketOptions} [options] - Optional filter parameters
+   * @param {Object} params - The params object
+   * @param {PaginatedMarketOptions} [params.options] - Optional filter parameters
    *
    * @returns {Promise<Page<SavedTrack>>} Pages of tracks
    */
-  getSaved(options?: PaginatedMarketOptions): Promise<Page<SavedTrack>> {
+  getSaved({
+    options,
+  }: {
+    options?: PaginatedMarketOptions;
+  }): Promise<Page<SavedTrack>> {
     return Effect.runPromise(
       Effect.gen(function* () {
         return yield* makeRequest(
@@ -80,15 +99,16 @@ class TrackService
   /**
    * Check if one or more tracks is already saved in the current Spotify user's 'Your Music' library
    *
-   * @param {string} trackIds - A comma-separated list of the Spotify IDs. Maximum: 50 IDs
+   * @param {Object} params - The params object
+   * @param {string} params.ids - A comma-separated list of the Spotify IDs. Maximum: 50 IDs
    * Example: `"7ouMYWpwJ422jRcDASZB7P,4VqPOruhp5EdPBeR92t6lQ,2takcwOaAZWiXQijPHIx7B"`
    *
    * @returns {Promise<boolean[]>} Array of booleans
    */
-  checkSaved(trackIds: string): Promise<boolean[]> {
+  checkSaved({ ids }: { ids: string }): Promise<boolean[]> {
     return Effect.runPromise(
       Effect.gen(function* () {
-        const encodedIds = trackIds
+        const encodedIds = ids
           .split(",")
           .map((id) => encodeURIComponent(id.trim()))
           .join(",");

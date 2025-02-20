@@ -30,15 +30,19 @@ class UserService extends Data.TaggedClass("UserService") {
   /**
    * Get the current user's top artists or tracks based on calculated affinity
    *
-   * @param {"artists" | "tracks"} type - The type of entity to return
-   * @param {TimeRangePaginationOptions} [options] - Optional filter parameters
+   * @param {Object} params - The params object
+   * @param {"artists" | "tracks"} params.type - The type of entity to return
+   * @param {TimeRangePaginationOptions} [params.options] - Optional filter parameters
    *
    * @returns {Page<Artist | Track>} Pages of artists or tracks
    */
-  getTopItems(
-    type: "artists" | "tracks",
-    options?: TimeRangePaginationOptions,
-  ): Promise<Page<Artist | Track>> {
+  getTopItems({
+    type,
+    options,
+  }: {
+    type: "artists" | "tracks";
+    options?: TimeRangePaginationOptions;
+  }): Promise<Page<Artist | Track>> {
     return Effect.runPromise(
       Effect.gen(function* () {
         return yield* makeRequest(
@@ -55,16 +59,17 @@ class UserService extends Data.TaggedClass("UserService") {
   /**
    * Get public profile information about a Spotify user
    *
-   * @param {string} userId - The user's Spotify ID
+   * @param {Object} params - The params object
+   * @param {string} params.id - The user's Spotify ID
    * Example: `"smedjan"`
    *
    * @returns {Promise<User>} A user
    */
-  getUser(userId: string): Promise<User> {
+  getUser({ id }: { id: string }): Promise<User> {
     return Effect.runPromise(
       Effect.gen(function* () {
         return yield* makeRequest(
-          `users/${encodeURIComponent(userId)}`,
+          `users/${encodeURIComponent(id)}`,
           UserSchema,
         );
       }),
@@ -74,15 +79,19 @@ class UserService extends Data.TaggedClass("UserService") {
   /**
    * Get the current user's followed artists
    *
-   * @param {"artist"} type - The ID type
-   * @param {AfterBasedPaginationOptions} [options] - Optional filter parameters
+   * @param {Object} params - The params object
+   * @param {"artist"} params.type - The ID type
+   * @param {AfterBasedPaginationOptions} [params.options] - Optional filter parameters
    *
    * @returns {Promise<FollowedArtist>} A paged set of artists
    */
-  getFollowedArtists(
-    type: "artist",
-    options?: AfterBasedPaginationOptions,
-  ): Promise<FollowedArtist> {
+  getFollowedArtists({
+    type,
+    options,
+  }: {
+    type: "artist";
+    options?: AfterBasedPaginationOptions;
+  }): Promise<FollowedArtist> {
     return Effect.runPromise(
       Effect.gen(function* () {
         return yield* makeRequest(
@@ -97,16 +106,23 @@ class UserService extends Data.TaggedClass("UserService") {
   /**
    * Check to see if the current user is following one or more artists or other Spotify users
    *
-   * @param {string} userIds - A comma-separated list of the artist or the user Spotify IDs to check. Maximum: 50 IDs
+   * @param {Object} params - The params object
+   * @param {string} params.ids - A comma-separated list of the artist or the user Spotify IDs to check. Maximum: 50 IDs
    * Example: `"2CIMQHirSU0MQqyYHq0eOx,57dN52uHvrHOxijzpIgu3E,1vCWHaC5f2uS3yhpwWbIA6"`
-   * @param {"artist" | "user"} type - The ID type
+   * @param {"artist" | "user"} params.type - The ID type
    *
    * @returns {Promise<boolean[]>} Array of booleans
    */
-  checkFollowed(userIds: string, type: "artist" | "user"): Promise<boolean[]> {
+  checkFollowed({
+    ids,
+    type,
+  }: {
+    ids: string;
+    type: "artist" | "user";
+  }): Promise<boolean[]> {
     return Effect.runPromise(
       Effect.gen(function* () {
-        const encodedIds = userIds
+        const encodedIds = ids
           .split(",")
           .map((id) => encodeURIComponent(id.trim()))
           .join(",");
@@ -122,16 +138,17 @@ class UserService extends Data.TaggedClass("UserService") {
   /**
    * Check to see if the current user is following a specified playlist
    *
-   * @param {string} playlistId - The Spotify ID of the playlist
+   * @param {Object} params - The params object
+   * @param {string} params.id - The Spotify ID of the playlist
    * Example: `"3cEYpjA9oz9GiPac4AsH4n"`
    *
    * @returns {Promise<boolean[]>} Array of boolean, containing a single boolean
    */
-  isFollowingPlaylist(playlistId: string): Promise<boolean[]> {
+  isFollowingPlaylist({ id }: { id: string }): Promise<boolean[]> {
     return Effect.runPromise(
       Effect.gen(function* () {
         return yield* makeRequest(
-          `playlist/${encodeURIComponent(playlistId)}/followers/contains`,
+          `playlist/${encodeURIComponent(id)}/followers/contains`,
           Schema.Array(Schema.Boolean),
         );
       }),

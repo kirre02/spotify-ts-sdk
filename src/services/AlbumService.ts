@@ -28,17 +28,24 @@ class AlbumService
   /**
    * Get Spotify catalog information for a single album
    *
-   * @param {string} albumId - The Spotify ID of the album
+   * @param {Object} params - The params object
+   * @param {string} params.id - The Spotify ID of the album
    * Example: `"4aawyAB9vmqN3uQ7FjRGTy"`
-   * @param {MarketOnlyOptions} [options] - Optional filter parameters
+   * @param {MarketOnlyOptions} [params.options] - Optional filter parameters
    *
    * @returns {Promise<Album>} An album
    */
-  get(albumId: string, options?: MarketOnlyOptions): Promise<Album> {
+  get({
+    id,
+    options,
+  }: {
+    id: string;
+    options?: MarketOnlyOptions;
+  }): Promise<Album> {
     return Effect.runPromise(
       Effect.gen(function* () {
         return yield* makeRequest(
-          `albums/${encodeURIComponent(albumId)}`,
+          `albums/${encodeURIComponent(id)}`,
           AlbumSchema,
           options,
         );
@@ -49,16 +56,23 @@ class AlbumService
   /**
    * Get Spotify catalog information for multiple albums identified by their Spotify IDs
    *
-   * @param {string} albumIds - A comma-separated list of the Spotify IDs for the albums. Maximum: 20 IDs
+   * @param {Object} params - The params object
+   * @param {string} params.ids - A comma-separated list of the Spotify IDs for the albums. Maximum: 20 IDs
    * Example: `"382ObEPsp2rxGrnsizN5TX,1A2GTWGtFfWp7KSQTwWOyo,2noRn2Aes5aoNVsU6iWThc"`
-   * @param {MarketOnlyOptions} [options] - Optional filter parameters
+   * @param {MarketOnlyOptions} [params.options] - Optional filter parameters
    *
    * @returns {Promise<Album[]>} A set of albums
    */
-  getMany(albumIds: string, options?: MarketOnlyOptions): Promise<Album[]> {
+  getMany({
+    ids,
+    options,
+  }: {
+    ids: string;
+    options?: MarketOnlyOptions;
+  }): Promise<Album[]> {
     return Effect.runPromise(
       Effect.gen(function* () {
-        const encodedIds = albumIds
+        const encodedIds = ids
           .split(",")
           .map((id) => encodeURIComponent(id.trim()))
           .join(",");
@@ -75,20 +89,24 @@ class AlbumService
   /**
    * Get Spotify catalog information about an album’s tracks.
    *
-   * @param {string} albumId - The Spotify ID of the album.
+   * @param {Object} params - The params object
+   * @param {string} params.id - The Spotify ID of the album.
    * Example: `"4aawyAB9vmqN3uQ7FjRGTy"`
-   * @param {PaginatedMarketOptions} [options] - Optional filter parameters
+   * @param {PaginatedMarketOptions} [params.options] - Optional filter parameters
    *
    * @returns {Promise<Page<Track>>} Pages of tracks
    */
-  getTracks(
-    albumId: string,
-    options?: PaginatedMarketOptions,
-  ): Promise<Page<Track>> {
+  getTracks({
+    id,
+    options,
+  }: {
+    id: string;
+    options?: PaginatedMarketOptions;
+  }): Promise<Page<Track>> {
     return Effect.runPromise(
       Effect.gen(function* () {
         return yield* makeRequest(
-          `albums/${encodeURIComponent(albumId)}/tracks`,
+          `albums/${encodeURIComponent(id)}/tracks`,
           PageSchema(TrackSchema),
           options,
         );
@@ -99,11 +117,16 @@ class AlbumService
   /**
    * Get a list of albums saved in the current Spotify user's 'Your Music' library
    *
-   * @param {PaginatedMarketOptions} [options] - Optional filter parameters
+   * @param {Object} params - The params object
+   * @param {PaginatedMarketOptions} [params.options] - Optional filter parameters
    *
    * @returns {Promise<Page<SavedAlbum>>} Pages of albums
    */
-  getSaved(options?: PaginatedMarketOptions): Promise<Page<SavedAlbum>> {
+  getSaved({
+    options,
+  }: {
+    options?: PaginatedMarketOptions;
+  }): Promise<Page<SavedAlbum>> {
     return Effect.runPromise(
       Effect.gen(function* () {
         return yield* makeRequest(
@@ -118,15 +141,16 @@ class AlbumService
   /**
    * Check if one or more albums is already saved in the current Spotify user's 'Your Music' library
    *
-   * @param {string} albumIds - A comma-separated list of the Spotify IDs for the albums. Maximum: 20 IDs
+   * @param {Object} params - The params object
+   * @param {string} params.ids - A comma-separated list of the Spotify IDs for the albums. Maximum: 20 IDs
    * Example: `"382ObEPsp2rxGrnsizN5TX,1A2GTWGtFfWp7KSQTwWOyo,2noRn2Aes5aoNVsU6iWThc"`
    *
    * @returns {Promise<boolean[]>} Array of booleans
    */
-  checkSaved(albumIds: string): Promise<boolean[]> {
+  checkSaved({ ids }: { ids: string }): Promise<boolean[]> {
     return Effect.runPromise(
       Effect.gen(function* () {
-        const encodedIds = albumIds
+        const encodedIds = ids
           .split(",")
           .map((id) => encodeURIComponent(id.trim()))
           .join(",");
@@ -142,11 +166,16 @@ class AlbumService
   /**
    * Get a list of new album releases featured in Spotify (shown, for example, on a Spotify player’s “Browse” tab).
    *
-   * @param {PaginationOptions} [options] - Optional filter parameters
+   * @param {Object} params - The params object
+   * @param {PaginationOptions} [params.options] - Optional filter parameters
    *
    * @returns {Promise<Page<SimplifiedAlbum>>}
    */
-  getNewReleases(options?: PaginationOptions): Promise<Page<SimplifiedAlbum>> {
+  getNewReleases({
+    options,
+  }: {
+    options?: PaginationOptions;
+  }): Promise<Page<SimplifiedAlbum>> {
     return Effect.runPromise(
       Effect.gen(function* () {
         return yield* makeRequest(

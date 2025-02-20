@@ -23,13 +23,16 @@ class PlayerService extends Data.TaggedClass("PlayerService") {
   /**
    * Get information about the user's current playback state, including track or episode, progress, and active device
    *
-   * @param {MarketAdditionalTypesOptions} [options] - Optional filter parameters
+   * @param {Object} params - The params object
+   * @param {MarketAdditionalTypesOptions} [params.options] - Optional filter parameters
    *
    * @returns {Promise<PlaybackState>} Information about playback
    */
-  getPlaybackState(
-    options?: MarketAdditionalTypesOptions,
-  ): Promise<PlaybackState> {
+  getPlaybackState({
+    options,
+  }: {
+    options?: MarketAdditionalTypesOptions;
+  }): Promise<PlaybackState> {
     return Effect.runPromise(
       Effect.gen(function* () {
         return yield* makeRequest("me/player", PlaybackStateSchema, options);
@@ -56,13 +59,16 @@ class PlayerService extends Data.TaggedClass("PlayerService") {
   /**
    * Get the object currently being played on the user's Spotify account
    *
-   * @param {MarketAdditionalTypesOptions} [options] - Optional filter parameters
+   * @param {Object} params - The params object
+   * @param {MarketAdditionalTypesOptions} [params.options] - Optional filter parameters
    *
    * @returns {Promise<PlaybackState>} Information about the currently playing track
    */
-  getCurrentlyPlaying(
-    options?: MarketAdditionalTypesOptions,
-  ): Promise<PlaybackState> {
+  getCurrentlyPlaying({
+    options,
+  }: {
+    options?: MarketAdditionalTypesOptions;
+  }): Promise<PlaybackState> {
     return Effect.runPromise(
       Effect.gen(function* () {
         return yield* makeRequest(
@@ -77,11 +83,16 @@ class PlayerService extends Data.TaggedClass("PlayerService") {
   /**
    * Get tracks from the current user's recently played tracks. **Note:** Currently doesn't support podcast episodes
    *
-   * @param {DateRangeOptions} [options] - Optional filter parameters
+   * @param {Object} params - The params object
+   * @param {DateRangeOptions} [params.options] - Optional filter parameters
    *
    * @returns {Promise<Page<PlayHistory>>} A paged set of tracks
    */
-  getRecentlyPlayed(options?: DateRangeOptions): Promise<Page<PlayHistory>> {
+  getRecentlyPlayed({
+    options,
+  }: {
+    options?: DateRangeOptions;
+  }): Promise<Page<PlayHistory>> {
     return Effect.runPromise(
       Effect.gen(function* () {
         return yield* makeRequest(

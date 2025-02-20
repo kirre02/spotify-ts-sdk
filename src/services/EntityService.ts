@@ -2,8 +2,14 @@ import { Config, Effect, Schema } from "effect";
 import { FetchError, JsonError } from "../errors";
 
 export interface IEntity<T> {
-  get(id: string, options?: AllOptions): Promise<T>;
-  getMany(ids: string, options?: AllOptions): Promise<T[]>;
+  get({ id, options }: { id: string; options?: AllOptions }): Promise<T>;
+  getMany({
+    ids,
+    options,
+  }: {
+    ids: string;
+    options?: AllOptions;
+  }): Promise<T[]>;
 }
 
 export function makeRequest(
