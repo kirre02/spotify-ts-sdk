@@ -1,16 +1,21 @@
 import { Effect, Data, Schema } from "effect";
 import type ICache from "../cache/IChace.js";
-import { IAuth, AccessToken, AccessTokenSchema } from "./Iauth.js";
+import {
+    type IAuth,
+    type AccessToken,
+    AccessTokenSchema
+} from "./Iauth.js";
+import {FetchError, JsonError} from "../errors";
 
 /**
- * @class ClientAuthService
+ * @class withClientCredentials
  * @extends Data.TaggedClass
  * @implements IAuth
  *
  * A service for handling OAuth token management, including caching and fetching new access tokens.
  */
-export default class ClientAuthService
-    extends Data.TaggedClass("ClientAuthService")
+export default class withClientCredentials
+    extends Data.TaggedClass("withClientCredentials")
     implements IAuth {
 
     /**
@@ -107,12 +112,12 @@ export default class ClientAuthService
                         },
                         body: params.toString(),
                     }),
-                catch: () => Effect.fail(new Error("Failed to fetch a new token")),
+                catch: () => new FetchError(),
             });
 
             const data = yield* Effect.tryPromise({
                 try: () => response.json(),
-                catch: () => Effect.fail(new Error("Failed to parse JSON")),
+                catch: () => new JsonError(),
             });
 
             if (!data.access_token) {
