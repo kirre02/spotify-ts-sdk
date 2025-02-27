@@ -5,7 +5,8 @@ import {
     type AccessToken,
     AccessTokenSchema
 } from "./Iauth.js";
-import {FetchError, JsonError} from "../errors";
+import { FetchError, JsonError } from "../errors";
+import withPKCEStrategy from "./withPKCEStrategy";
 
 /**
  * @class withClientCredentials
@@ -22,14 +23,18 @@ export default class withClientCredentials
      * @param {ICache} cache - Cache instance for storing tokens.
      * @param {string} clientId - The client ID for authentication.
      * @param {string} clientSecret - The client secret for authentication.
+     * @param {string[]} scopes - The required scopes for the access token
      */
     constructor(
         private cache: ICache,
         private clientId: string,
         private clientSecret: string,
+        private scopes: string[] = []
     ) {
         super();
     }
+
+    private static readonly cacheKey = "spotify-sdk:AuthorizationCodeWithPKCEStrategy:token";
 
     /**
      * Retrieves an access token from the cache or fetches a new one if none exists.
@@ -41,7 +46,7 @@ export default class withClientCredentials
 
         return Effect.runPromise(
             Effect.gen(function*() {
-                const cachedToken = yield* self.cache.get(self.clientId);
+                const cachedToken = yield* self.cache.get(withClientCredentials.cacheKey);
 
                 if (cachedToken) {
                     return yield* Schema.decode(AccessTokenSchema)({
@@ -52,7 +57,7 @@ export default class withClientCredentials
 
                 const newToken = yield* self.fetchNewToken();
 
-                yield* self.cache.set(self.clientId, newToken.token);
+                yield* self.cache.set(withClientCredentials.cacheKey, newToken.token);
 
                 return newToken;
             })
@@ -69,7 +74,7 @@ export default class withClientCredentials
 
         return Effect.runPromise(
             Effect.gen(function*() {
-                const cachedToken = yield* self.cache.get(self.clientId);
+                const cachedToken = yield* self.cache.get(withClientCredentials.cacheKey);
 
                 if (!cachedToken) return null;
 
@@ -84,8 +89,8 @@ export default class withClientCredentials
     /**
      * Removes the access token from the cache.
      */
-    removeAccessToken(): void {
-        this.cache.remove(this.clientId);
+    public removeAccessToken(): void {
+        Effect.runPromise(this.cache.remove(withClientCredentials.cacheKey));
     }
 
     /**
@@ -95,22 +100,25 @@ export default class withClientCredentials
      * @returns {Effect.Effect<string>} An Effect that resolves with a new access token.
      */
     private fetchNewToken() {
-        const { clientId, clientSecret } = this;
+        const { clientId, clientSecret, scopes } = this;
 
         return Effect.gen(function*() {
             const url = "https://accounts.spotify.com/api/token";
-            const params = new URLSearchParams();
-            params.append("grant_type", "client_credentials");
+            const options = {
+                grant_type: 'client_credentials',
+                scope: scopes.join(' ')
+            } as any;
 
+            const body = Object.keys(options).map(key => key + '=' + options[key]).join('&');
             const response = yield* Effect.tryPromise({
                 try: () =>
                     fetch(url, {
                         method: "POST",
                         headers: {
-                            Authorization: `Basic ${Buffer.from(`${clientId}:${clientSecret}`).toString("base64")}`,
+                            "Authorization": `Basic ${Buffer.from(`${clientId}:${clientSecret}`).toString("base64")}`,
                             "Content-Type": "application/x-www-form-urlencoded",
                         },
-                        body: params.toString(),
+                        body: body,
                     }),
                 catch: () => new FetchError(),
             });
@@ -120,10 +128,12 @@ export default class withClientCredentials
                 catch: () => new JsonError(),
             });
 
+            // @ts-ignore
             if (!data.access_token) {
                 return yield* Effect.fail(new Error("Invalid token response"));
             }
 
+            //@ts-ignore
             return data.access_token;
         });
     }
