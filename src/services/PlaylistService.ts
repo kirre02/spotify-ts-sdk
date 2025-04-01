@@ -20,7 +20,7 @@ import type {
   Image,
 } from "../schemas";
 
-class PlaylistService extends Data.TaggedClass("PlaylistService") {
+export class PlaylistService extends Data.TaggedClass("PlaylistService") {
   /**
    * Get a playlist owned by a Spotify user
    *

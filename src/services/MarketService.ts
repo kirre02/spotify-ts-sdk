@@ -1,7 +1,7 @@
 import { Data, Effect, Schema } from "effect";
 import { makeRequest } from "./EntityService";
 
-class MarketService extends Data.TaggedClass("MarketService") {
+export class MarketService extends Data.TaggedClass("MarketService") {
   /**
    * Get the list of markets where Spotify is available.
    *

@@ -8,7 +8,7 @@ import {
 import { PageSchema, SavedTrackSchema, TrackSchema } from "../schemas";
 import type { Page, SavedTrack, Track } from "../schemas";
 
-class TrackService
+export class TrackService
   extends Data.TaggedClass("TrackService")
   implements IEntity<Track>
 {
@@ -63,6 +63,7 @@ class TrackService
           .split(",")
           .map((id) => encodeURIComponent(id.trim()))
           .join(",");
+
         return yield* makeRequest(
           `tracks?ids=${encodedIds}`,
           Schema.Array(TrackSchema),

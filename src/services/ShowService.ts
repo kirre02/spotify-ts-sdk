@@ -20,7 +20,7 @@ import type {
   SimplifiedShow,
 } from "../schemas";
 
-class ShowService extends Data.TaggedClass("ShowService") {
+export class ShowService extends Data.TaggedClass("ShowService") {
   /**
    * Get Spotify catalog information for a single show identified by its unique Spotify ID
    *

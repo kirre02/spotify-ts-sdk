@@ -13,7 +13,7 @@ import {
 } from "./EntityService.js";
 import { Effect, Data, Schema } from "effect";
 
-class ArtistService
+export class ArtistService
   extends Data.TaggedClass("ArtistService")
   implements IEntity<Artist>
 {

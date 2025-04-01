@@ -7,7 +7,7 @@ import {
   type LocalizedPaginationOptions,
 } from "./EntityService";
 
-class CategoryService extends Data.TaggedClass("CategoryService") {
+export class CategoryService extends Data.TaggedClass("CategoryService") {
   /**
    * Get a single category used to tag items in Spotify (on, for example, the Spotify player’s “Browse” tab).
    *

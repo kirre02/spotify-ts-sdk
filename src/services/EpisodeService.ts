@@ -8,7 +8,7 @@ import {
 import type { Episode, Page, SavedEpisode } from "../schemas";
 import { EpisodeSchema, PageSchema, SavedEpisodeSchema } from "../schemas";
 
-class EpisodeService
+export class EpisodeService
   extends Data.TaggedClass("EpisodeService")
   implements IEntity<Episode>
 {

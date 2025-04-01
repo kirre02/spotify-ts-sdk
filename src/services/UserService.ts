@@ -13,7 +13,7 @@ import {
   type TimeRangePaginationOptions,
 } from "./EntityService";
 
-class UserService extends Data.TaggedClass("UserService") {
+export class UserService extends Data.TaggedClass("UserService") {
   /**
    * Get detailed profile information about the current user (including the current user's username)
    *

@@ -6,7 +6,7 @@ import {
 } from "./EntityService";
 import { ChapterSchema, type Chapter } from "../schemas";
 
-class ChapterService
+export class ChapterService
   extends Data.TaggedClass("ChapterService")
   implements IEntity<Chapter>
 {

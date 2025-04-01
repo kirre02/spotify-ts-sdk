@@ -2,7 +2,7 @@ import { Data, Effect } from "effect";
 import { makeRequest, type MarketExternalOptions } from "./EntityService";
 import { SearchResultsMapSchema, type SearchResults } from "../schemas";
 
-class SearchService extends Data.TaggedClass("SearchService") {
+export class SearchService extends Data.TaggedClass("SearchService") {
   /**
    * Get Spotify catalog information about albums, artists, playlists, tracks, shows, episodes or audiobooks that match a keyword string.
    * Audiobooks are only available within the US, UK, Canada, Ireland, New Zealand and Australia markets

@@ -19,7 +19,7 @@ import {
   SimplifiedChapterSchema,
 } from "../schemas";
 
-class AudiobookService
+export class AudiobookService
   extends Data.TaggedClass("AudiobookService")
   implements IEntity<Audiobook>
 {

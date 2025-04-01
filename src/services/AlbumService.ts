@@ -21,7 +21,7 @@ import {
   TrackSchema,
 } from "../schemas";
 
-class AlbumService
+export class AlbumService
   extends Data.TaggedClass("AlbumService")
   implements IEntity<Album>
 {

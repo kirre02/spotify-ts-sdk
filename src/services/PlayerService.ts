@@ -19,7 +19,7 @@ import type {
   Queue,
 } from "../schemas";
 
-class PlayerService extends Data.TaggedClass("PlayerService") {
+export class PlayerService extends Data.TaggedClass("PlayerService") {
   /**
    * Get information about the user's current playback state, including track or episode, progress, and active device
    *
