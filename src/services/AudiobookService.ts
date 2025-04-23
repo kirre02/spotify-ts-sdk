@@ -21,8 +21,7 @@ import {
 
 export class AudiobookService
   extends Data.TaggedClass("AudiobookService")
-  implements IEntity<Audiobook>
-{
+  implements IEntity<Audiobook> {
   /**
    * Get Spotify catalog information for a single audiobook. Audiobooks are only available within the US, UK, Canada, Ireland, New Zealand and Australia markets
    *
@@ -41,13 +40,11 @@ export class AudiobookService
     options?: MarketOnlyOptions;
   }): Promise<Audiobook> {
     return Effect.runPromise(
-      Effect.gen(function* () {
-        return yield* makeRequest(
-          `audiobooks/${encodeURIComponent(id)}`,
-          AudiobookSchema,
-          options,
-        );
-      }),
+      makeRequest(
+        `audiobooks/${encodeURIComponent(id)}`,
+        AudiobookSchema,
+        options,
+      )
     );
   }
 
@@ -69,19 +66,17 @@ export class AudiobookService
     ids: string;
     options?: MarketOnlyOptions;
   }): Promise<Audiobook[]> {
-    return Effect.runPromise(
-      Effect.gen(function* () {
-        const encodedIds = ids
-          .split(",")
-          .map((id) => encodeURIComponent(id.trim()))
-          .join(",");
+    const encodedIds = ids
+      .split(",")
+      .map((id) => encodeURIComponent(id.trim()))
+      .join(",");
 
-        return yield* makeRequest(
-          `audiobooks?ids=${encodedIds}`,
-          Schema.Array(AudiobookSchema),
-          options,
-        );
-      }),
+    return Effect.runPromise(
+      makeRequest(
+        `audiobooks?ids=${encodedIds}`,
+        Schema.Array(AudiobookSchema),
+        options,
+      )
     );
   }
 
@@ -103,13 +98,11 @@ export class AudiobookService
     options?: PaginatedMarketOptions;
   }): Promise<Page<SimplifiedChapter>> {
     return Effect.runPromise(
-      Effect.gen(function* () {
-        return yield* makeRequest(
-          `audiobooks/${encodeURIComponent(id)}/chapters`,
-          PageSchema(SimplifiedChapterSchema),
-          options,
-        );
-      }),
+      makeRequest(
+        `audiobooks/${encodeURIComponent(id)}/chapters`,
+        PageSchema(SimplifiedChapterSchema),
+        options,
+      )
     );
   }
 
@@ -127,13 +120,11 @@ export class AudiobookService
     options?: PaginationOptions;
   }): Promise<Page<SimplifiedAudiobook>> {
     return Effect.runPromise(
-      Effect.gen(function* () {
-        return yield* makeRequest(
-          "me/audiobooks",
-          PageSchema(SimplifiedAudiobookSchema),
-          options,
-        );
-      }),
+      makeRequest(
+        "me/audiobooks",
+        PageSchema(SimplifiedAudiobookSchema),
+        options,
+      )
     );
   }
 
@@ -148,18 +139,16 @@ export class AudiobookService
    * the corresponding index in `ids` is saved (`true`) or not (`false`).
    */
   checkSaved({ ids }: { ids: string }): Promise<boolean[]> {
-    return Effect.runPromise(
-      Effect.gen(function* () {
-        const encodedIds = ids
-          .split(",")
-          .map((id) => encodeURIComponent(id.trim()))
-          .join(",");
+    const encodedIds = ids
+      .split(",")
+      .map((id) => encodeURIComponent(id.trim()))
+      .join(",");
 
-        return yield* makeRequest(
-          `me/audiobooks/contains?ids=${encodedIds}`,
-          Schema.Array(Schema.Boolean),
-        );
-      }),
+    return Effect.runPromise(
+      makeRequest(
+        `me/audiobooks/contains?ids=${encodedIds}`,
+        Schema.Array(Schema.Boolean),
+      )
     );
   }
 }

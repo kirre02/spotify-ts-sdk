@@ -8,8 +8,7 @@ import { ChapterSchema, type Chapter } from "../schemas";
 
 export class ChapterService
   extends Data.TaggedClass("ChapterService")
-  implements IEntity<Chapter>
-{
+  implements IEntity<Chapter> {
   /**
    * Get Spotify catalog information for a single audiobook chapter. Chapters are only available within the US, UK, Canada, Ireland, New Zealand and Australia markets.
    *
@@ -28,13 +27,11 @@ export class ChapterService
     options?: MarketOnlyOptions;
   }): Promise<Chapter> {
     return Effect.runPromise(
-      Effect.gen(function* () {
-        return yield* makeRequest(
-          `chapters/${encodeURIComponent(id)}`,
-          ChapterSchema,
-          options,
-        );
-      }),
+      makeRequest(
+        `chapters/${encodeURIComponent(id)}`,
+        ChapterSchema,
+        options,
+      )
     );
   }
 
@@ -55,19 +52,17 @@ export class ChapterService
     ids: string;
     options?: MarketOnlyOptions;
   }): Promise<Chapter[]> {
-    return Effect.runPromise(
-      Effect.gen(function* () {
-        const encodedIds = ids
-          .split(",")
-          .map((id) => encodeURIComponent(id.trim()))
-          .join(",");
+    const encodedIds = ids
+      .split(",")
+      .map((id) => encodeURIComponent(id.trim()))
+      .join(",");
 
-        return yield* makeRequest(
-          `chapters?ids=${encodedIds}`,
-          Schema.Array(ChapterSchema),
-          options,
-        );
-      }),
+    return Effect.runPromise(
+      makeRequest(
+        `chapters?ids=${encodedIds}`,
+        Schema.Array(ChapterSchema),
+        options,
+      )
     );
   }
 }

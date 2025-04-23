@@ -10,8 +10,7 @@ import type { Page, SavedTrack, Track } from "../schemas";
 
 export class TrackService
   extends Data.TaggedClass("TrackService")
-  implements IEntity<Track>
-{
+  implements IEntity<Track> {
   /**
    * Get Spotify catalog information for a single track identified by its unique Spotify ID
    *
@@ -30,13 +29,11 @@ export class TrackService
     options?: MarketOnlyOptions;
   }): Promise<Track> {
     return Effect.runPromise(
-      Effect.gen(function* () {
-        return yield* makeRequest(
-          `tracks/${encodeURIComponent(id)}`,
-          TrackSchema,
-          options,
-        );
-      }),
+      makeRequest(
+        `tracks/${encodeURIComponent(id)}`,
+        TrackSchema,
+        options,
+      )
     );
   }
 
@@ -57,19 +54,17 @@ export class TrackService
     ids: string;
     options?: MarketOnlyOptions;
   }): Promise<Track[]> {
-    return Effect.runPromise(
-      Effect.gen(function* () {
-        const encodedIds = ids
-          .split(",")
-          .map((id) => encodeURIComponent(id.trim()))
-          .join(",");
+    const encodedIds = ids
+      .split(",")
+      .map((id) => encodeURIComponent(id.trim()))
+      .join(",");
 
-        return yield* makeRequest(
-          `tracks?ids=${encodedIds}`,
-          Schema.Array(TrackSchema),
-          options,
-        );
-      }),
+    return Effect.runPromise(
+      makeRequest(
+        `tracks?ids=${encodedIds}`,
+        Schema.Array(TrackSchema),
+        options,
+      )
     );
   }
 
@@ -87,13 +82,11 @@ export class TrackService
     options?: PaginatedMarketOptions;
   }): Promise<Page<SavedTrack>> {
     return Effect.runPromise(
-      Effect.gen(function* () {
-        return yield* makeRequest(
-          "me/tracks",
-          PageSchema(SavedTrackSchema),
-          options,
-        );
-      }),
+      makeRequest(
+        "me/tracks",
+        PageSchema(SavedTrackSchema),
+        options,
+      )
     );
   }
 
@@ -108,18 +101,16 @@ export class TrackService
    * the corresponding index in `ids` is saved (`true`) or not (`false`).
    */
   checkSaved({ ids }: { ids: string }): Promise<boolean[]> {
-    return Effect.runPromise(
-      Effect.gen(function* () {
-        const encodedIds = ids
-          .split(",")
-          .map((id) => encodeURIComponent(id.trim()))
-          .join(",");
+    const encodedIds = ids
+      .split(",")
+      .map((id) => encodeURIComponent(id.trim()))
+      .join(",");
 
-        return yield* makeRequest(
-          `me/tracks/contains?${encodedIds}`,
-          Schema.Array(Schema.Boolean),
-        );
-      }),
+    return Effect.runPromise(
+      makeRequest(
+        `me/tracks/contains?${encodedIds}`,
+        Schema.Array(Schema.Boolean),
+      )
     );
   }
 }

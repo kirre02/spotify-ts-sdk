@@ -10,8 +10,7 @@ import { EpisodeSchema, PageSchema, SavedEpisodeSchema } from "../schemas";
 
 export class EpisodeService
   extends Data.TaggedClass("EpisodeService")
-  implements IEntity<Episode>
-{
+  implements IEntity<Episode> {
   /**
    * Get Spotify catalog information for a single episode identified by its unique Spotify ID.
    *
@@ -30,13 +29,11 @@ export class EpisodeService
     options?: MarketOnlyOptions;
   }): Promise<Episode> {
     return Effect.runPromise(
-      Effect.gen(function* () {
-        return yield* makeRequest(
-          `episodes/${encodeURIComponent(id)}`,
-          EpisodeSchema,
-          options,
-        );
-      }),
+      makeRequest(
+        `episodes/${encodeURIComponent(id)}`,
+        EpisodeSchema,
+        options,
+      )
     );
   }
 
@@ -57,19 +54,17 @@ export class EpisodeService
     ids: string;
     options?: MarketOnlyOptions;
   }): Promise<Episode[]> {
-    return Effect.runPromise(
-      Effect.gen(function* () {
-        const encodedIds = ids
-          .split(",")
-          .map((id) => encodeURIComponent(id.trim()))
-          .join(",");
+    const encodedIds = ids
+      .split(",")
+      .map((id) => encodeURIComponent(id.trim()))
+      .join(",");
 
-        return yield* makeRequest(
-          `episodes?ids=${encodedIds}`,
-          Schema.Array(EpisodeSchema),
-          options,
-        );
-      }),
+    return Effect.runPromise(
+      makeRequest(
+        `episodes?ids=${encodedIds}`,
+        Schema.Array(EpisodeSchema),
+        options,
+      )
     );
   }
 
@@ -88,13 +83,11 @@ export class EpisodeService
     options?: PaginatedMarketOptions;
   }): Promise<Page<SavedEpisode>> {
     return Effect.runPromise(
-      Effect.gen(function* () {
-        return yield* makeRequest(
-          "me/episodes",
-          PageSchema(SavedEpisodeSchema),
-          options,
-        );
-      }),
+      makeRequest(
+        "me/episodes",
+        PageSchema(SavedEpisodeSchema),
+        options,
+      )
     );
   }
 
@@ -110,18 +103,16 @@ export class EpisodeService
    * the corresponding index in `ids` is saved (`true`) or not (`false`).
    */
   checkSaved({ ids }: { ids: string }): Promise<boolean[]> {
-    return Effect.runPromise(
-      Effect.gen(function* () {
-        const encodedIds = ids
-          .split(",")
-          .map((id) => encodeURIComponent(id.trim()))
-          .join(",");
+    const encodedIds = ids
+      .split(",")
+      .map((id) => encodeURIComponent(id.trim()))
+      .join(",");
 
-        return yield* makeRequest(
-          `me/episodes/contains?ids=${encodedIds}`,
-          Schema.Array(Schema.Boolean),
-        );
-      }),
+    return Effect.runPromise(
+      makeRequest(
+        `me/episodes/contains?ids=${encodedIds}`,
+        Schema.Array(Schema.Boolean),
+      )
     );
   }
 }

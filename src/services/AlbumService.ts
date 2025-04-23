@@ -23,8 +23,7 @@ import {
 
 export class AlbumService
   extends Data.TaggedClass("AlbumService")
-  implements IEntity<Album>
-{
+  implements IEntity<Album> {
   /**
    * Get Spotify catalog information for a single album
    *
@@ -43,13 +42,11 @@ export class AlbumService
     options?: MarketOnlyOptions;
   }): Promise<Album> {
     return Effect.runPromise(
-      Effect.gen(function* () {
-        return yield* makeRequest(
-          `albums/${encodeURIComponent(id)}`,
-          AlbumSchema,
-          options,
-        );
-      }),
+      makeRequest(
+        `albums/${encodeURIComponent(id)}`,
+        AlbumSchema,
+        options,
+      )
     );
   }
 
@@ -70,19 +67,17 @@ export class AlbumService
     ids: string;
     options?: MarketOnlyOptions;
   }): Promise<Album[]> {
-    return Effect.runPromise(
-      Effect.gen(function* () {
-        const encodedIds = ids
-          .split(",")
-          .map((id) => encodeURIComponent(id.trim()))
-          .join(",");
+    const encodedIds = ids
+      .split(",")
+      .map((id) => encodeURIComponent(id.trim()))
+      .join(",");
 
-        return yield* makeRequest(
-          `albums?ids=${encodedIds}`,
-          Schema.Array(AlbumSchema),
-          options,
-        );
-      }),
+    return Effect.runPromise(
+      makeRequest(
+        `albums?ids=${encodedIds}`,
+        Schema.Array(AlbumSchema),
+        options,
+      )
     );
   }
 
@@ -104,13 +99,11 @@ export class AlbumService
     options?: PaginatedMarketOptions;
   }): Promise<Page<Track>> {
     return Effect.runPromise(
-      Effect.gen(function* () {
-        return yield* makeRequest(
-          `albums/${encodeURIComponent(id)}/tracks`,
-          PageSchema(TrackSchema),
-          options,
-        );
-      }),
+      makeRequest(
+        `albums/${encodeURIComponent(id)}/tracks`,
+        PageSchema(TrackSchema),
+        options,
+      )
     );
   }
 
@@ -128,13 +121,11 @@ export class AlbumService
     options?: PaginatedMarketOptions;
   }): Promise<Page<SavedAlbum>> {
     return Effect.runPromise(
-      Effect.gen(function* () {
-        return yield* makeRequest(
-          "me/albums",
-          PageSchema(SavedAlbumSchema),
-          options,
-        );
-      }),
+      makeRequest(
+        "me/albums",
+        PageSchema(SavedAlbumSchema),
+        options,
+      )
     );
   }
 
@@ -149,18 +140,16 @@ export class AlbumService
    * the corresponding index in `ids` is saved (`true`) or not (`false`).
    */
   checkSaved({ ids }: { ids: string }): Promise<boolean[]> {
-    return Effect.runPromise(
-      Effect.gen(function* () {
-        const encodedIds = ids
-          .split(",")
-          .map((id) => encodeURIComponent(id.trim()))
-          .join(",");
+    const encodedIds = ids
+      .split(",")
+      .map((id) => encodeURIComponent(id.trim()))
+      .join(",");
 
-        return yield* makeRequest(
-          `me/albums/contains?ids=${encodedIds}`,
-          Schema.Array(Schema.Boolean),
-        );
-      }),
+    return Effect.runPromise(
+      makeRequest(
+        `me/albums/contains?ids=${encodedIds}`,
+        Schema.Array(Schema.Boolean),
+      )
     );
   }
 
@@ -178,13 +167,11 @@ export class AlbumService
     options?: PaginationOptions;
   }): Promise<Page<SimplifiedAlbum>> {
     return Effect.runPromise(
-      Effect.gen(function* () {
-        return yield* makeRequest(
-          `browse/new-releases`,
-          PageSchema(SimplifiedAlbumSchema),
-          options,
-        );
-      }),
+      makeRequest(
+        `browse/new-releases`,
+        PageSchema(SimplifiedAlbumSchema),
+        options,
+      )
     );
   }
 }

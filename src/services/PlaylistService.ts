@@ -39,13 +39,11 @@ export class PlaylistService extends Data.TaggedClass("PlaylistService") {
     options?: MarketFieldOptions;
   }): Promise<Playlist> {
     return Effect.runPromise(
-      Effect.gen(function* () {
-        return yield* makeRequest(
-          `playlists/${encodeURIComponent(id)}`,
-          PlaylistSchema,
-          options,
-        );
-      }),
+      makeRequest(
+        `playlists/${encodeURIComponent(id)}`,
+        PlaylistSchema,
+        options,
+      )
     );
   }
 
@@ -67,13 +65,11 @@ export class PlaylistService extends Data.TaggedClass("PlaylistService") {
     options?: DetailedMarketPaginationOptions;
   }): Promise<Page<PlaylistTrack>> {
     return Effect.runPromise(
-      Effect.gen(function* () {
-        return yield* makeRequest(
-          `playlists/${encodeURIComponent(id)}/tracks`,
-          PageSchema(PlaylistTrackSchema),
-          options,
-        );
-      }),
+      makeRequest(
+        `playlists/${encodeURIComponent(id)}/tracks`,
+        PageSchema(PlaylistTrackSchema),
+        options,
+      )
     );
   }
 
@@ -91,13 +87,11 @@ export class PlaylistService extends Data.TaggedClass("PlaylistService") {
     options?: PaginationOptions;
   }): Promise<Page<SimplifiedPlaylist>> {
     return Effect.runPromise(
-      Effect.gen(function* () {
-        return yield* makeRequest(
-          "me/playlists",
-          PageSchema(SimplifiedPlaylistSchema),
-          options,
-        );
-      }),
+      makeRequest(
+        "me/playlists",
+        PageSchema(SimplifiedPlaylistSchema),
+        options,
+      )
     );
   }
 
@@ -119,13 +113,11 @@ export class PlaylistService extends Data.TaggedClass("PlaylistService") {
     options?: PaginationOptions;
   }): Promise<Page<SimplifiedPlaylist>> {
     return Effect.runPromise(
-      Effect.gen(function* () {
-        return yield* makeRequest(
-          `users/${encodeURIComponent(id)}/playlists`,
-          PageSchema(SimplifiedPlaylistSchema),
-          options,
-        );
-      }),
+      makeRequest(
+        `users/${encodeURIComponent(id)}/playlists`,
+        PageSchema(SimplifiedPlaylistSchema),
+        options,
+      )
     );
   }
 
@@ -140,12 +132,10 @@ export class PlaylistService extends Data.TaggedClass("PlaylistService") {
    */
   getCoverImage({ id }: { id: string }): Promise<Image[]> {
     return Effect.runPromise(
-      Effect.gen(function* () {
-        return yield* makeRequest(
-          `playlists/${encodeURIComponent(id)}/images`,
-          Schema.Array(ImageSchema),
-        );
-      }),
+      makeRequest(
+        `playlists/${encodeURIComponent(id)}/images`,
+        Schema.Array(ImageSchema),
+      )
     );
   }
 }

@@ -15,8 +15,7 @@ import { Effect, Data, Schema } from "effect";
 
 export class ArtistService
   extends Data.TaggedClass("ArtistService")
-  implements IEntity<Artist>
-{
+  implements IEntity<Artist> {
   /**
    * Get Spotify catalog information for a single artist identified by their unique Spotify ID.
    *
@@ -28,12 +27,10 @@ export class ArtistService
    */
   get({ id }: { id: string }): Promise<Artist> {
     return Effect.runPromise(
-      Effect.gen(function* () {
-        return yield* makeRequest(
-          `artists/${encodeURIComponent(id)}`,
-          ArtistSchema,
-        );
-      }),
+      makeRequest(
+        `artists/${encodeURIComponent(id)}`,
+        ArtistSchema,
+      )
     );
   }
 
@@ -47,18 +44,16 @@ export class ArtistService
    * @returns {Promise<Artist[]>} A set of artists
    */
   getMany({ ids }: { ids: string }): Promise<Artist[]> {
-    return Effect.runPromise(
-      Effect.gen(function* () {
-        const encodedIds = ids
-          .split(",")
-          .map((id) => encodeURIComponent(id.trim()))
-          .join(",");
+    const encodedIds = ids
+      .split(",")
+      .map((id) => encodeURIComponent(id.trim()))
+      .join(",");
 
-        return yield* makeRequest(
-          `artists?ids=${encodedIds}`,
-          Schema.Array(ArtistSchema),
-        );
-      }),
+    return Effect.runPromise(
+      makeRequest(
+        `artists?ids=${encodedIds}`,
+        Schema.Array(ArtistSchema),
+      )
     );
   }
 
@@ -80,13 +75,11 @@ export class ArtistService
     options?: AlbumRetrievalOptions;
   }): Promise<Page<SimplifiedAlbum>> {
     return Effect.runPromise(
-      Effect.gen(function* () {
-        return yield* makeRequest(
-          `artists/${encodeURIComponent(id)}/albums`,
-          PageSchema(SimplifiedAlbumSchema),
-          options,
-        );
-      }),
+      makeRequest(
+        `artists/${encodeURIComponent(id)}/albums`,
+        PageSchema(SimplifiedAlbumSchema),
+        options,
+      )
     );
   }
 
@@ -108,13 +101,11 @@ export class ArtistService
     options?: MarketOnlyOptions;
   }): Promise<Track[]> {
     return Effect.runPromise(
-      Effect.gen(function* () {
-        return yield* makeRequest(
-          `artists/${encodeURIComponent(id)}/top-tracks`,
-          Schema.Array(TrackSchema),
-          options,
-        );
-      }),
+      makeRequest(
+        `artists/${encodeURIComponent(id)}/top-tracks`,
+        Schema.Array(TrackSchema),
+        options,
+      )
     );
   }
 }

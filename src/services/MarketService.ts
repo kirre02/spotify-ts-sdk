@@ -9,9 +9,7 @@ export class MarketService extends Data.TaggedClass("MarketService") {
    */
   getAll(): Promise<String[]> {
     return Effect.runPromise(
-      Effect.gen(function* () {
-        return yield* makeRequest(`markets`, Schema.Array(Schema.String));
-      }),
+      makeRequest(`markets`, Schema.Array(Schema.String))
     );
   }
 }

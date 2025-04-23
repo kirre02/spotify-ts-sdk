@@ -39,13 +39,11 @@ export class ShowService extends Data.TaggedClass("ShowService") {
     options?: MarketOnlyOptions;
   }): Promise<Show> {
     return Effect.runPromise(
-      Effect.gen(function* () {
-        return yield* makeRequest(
-          `shows/${encodeURIComponent(id)}`,
-          ShowSchema,
-          options,
-        );
-      }),
+      makeRequest(
+        `shows/${encodeURIComponent(id)}`,
+        ShowSchema,
+        options,
+      )
     );
   }
 
@@ -66,19 +64,17 @@ export class ShowService extends Data.TaggedClass("ShowService") {
     ids: string;
     options?: MarketOnlyOptions;
   }): Promise<SimplifiedShow[]> {
-    return Effect.runPromise(
-      Effect.gen(function* () {
-        const encodedIds = ids
-          .split(",")
-          .map((id) => encodeURIComponent(id.trim()))
-          .join(",");
+    const encodedIds = ids
+      .split(",")
+      .map((id) => encodeURIComponent(id.trim()))
+      .join(",");
 
-        return yield* makeRequest(
-          `shows?${encodedIds}`,
-          Schema.Array(SimplifiedShowSchema),
-          options,
-        );
-      }),
+    return Effect.runPromise(
+      makeRequest(
+        `shows?${encodedIds}`,
+        Schema.Array(SimplifiedShowSchema),
+        options,
+      )
     );
   }
 
@@ -100,13 +96,11 @@ export class ShowService extends Data.TaggedClass("ShowService") {
     options?: PaginatedMarketOptions;
   }): Promise<Page<SimplifiedEpisode>> {
     return Effect.runPromise(
-      Effect.gen(function* () {
-        return yield* makeRequest(
-          `shows/${encodeURIComponent(id)}/episodes`,
-          PageSchema(SimplifiedEpisodeSchema),
-          options,
-        );
-      }),
+      makeRequest(
+        `shows/${encodeURIComponent(id)}/episodes`,
+        PageSchema(SimplifiedEpisodeSchema),
+        options,
+      )
     );
   }
 
@@ -124,13 +118,11 @@ export class ShowService extends Data.TaggedClass("ShowService") {
     options?: PaginationOptions;
   }): Promise<Page<SavedShow>> {
     return Effect.runPromise(
-      Effect.gen(function* () {
-        return yield* makeRequest(
-          `me/shows`,
-          PageSchema(SavedShowSchema),
-          options,
-        );
-      }),
+      makeRequest(
+        `me/shows`,
+        PageSchema(SavedShowSchema),
+        options,
+      )
     );
   }
 
@@ -145,18 +137,16 @@ export class ShowService extends Data.TaggedClass("ShowService") {
    * the corresponding index in `ids` is saved (`true`) or not (`false`).
    */
   checkSaved({ ids }: { ids: string }): Promise<boolean[]> {
-    return Effect.runPromise(
-      Effect.gen(function* () {
-        const encodedIds = ids
-          .split(",")
-          .map((id) => encodeURIComponent(id.trim()))
-          .join(",");
+    const encodedIds = ids
+      .split(",")
+      .map((id) => encodeURIComponent(id.trim()))
+      .join(",");
 
-        return yield* makeRequest(
-          `me/shows/contains?${encodedIds}`,
-          Schema.Array(Schema.Boolean),
-        );
-      }),
+    return Effect.runPromise(
+      makeRequest(
+        `me/shows/contains?${encodedIds}`,
+        Schema.Array(Schema.Boolean),
+      )
     );
   }
 }

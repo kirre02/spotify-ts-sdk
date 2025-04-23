@@ -26,13 +26,11 @@ export class CategoryService extends Data.TaggedClass("CategoryService") {
     options?: LocaleOnlyOptions;
   }): Promise<Category> {
     return Effect.runPromise(
-      Effect.gen(function* () {
-        return yield* makeRequest(
-          `browse/categories/${encodeURIComponent(id)}`,
-          CategorySchema,
-          options,
-        );
-      }),
+      makeRequest(
+        `browse/categories/${encodeURIComponent(id)}`,
+        CategorySchema,
+        options,
+      )
     );
   }
 
@@ -50,13 +48,11 @@ export class CategoryService extends Data.TaggedClass("CategoryService") {
     options?: LocalizedPaginationOptions;
   }): Promise<Page<Category>> {
     return Effect.runPromise(
-      Effect.gen(function* () {
-        return yield* makeRequest(
-          `browse/categories`,
-          PageSchema(CategorySchema),
-          options,
-        );
-      }),
+      makeRequest(
+        `browse/categories`,
+        PageSchema(CategorySchema),
+        options,
+      )
     );
   }
 }

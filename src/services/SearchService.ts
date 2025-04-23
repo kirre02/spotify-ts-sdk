@@ -32,13 +32,11 @@ export class SearchService extends Data.TaggedClass("SearchService") {
     options?: MarketExternalOptions;
   }): Promise<SearchResults> {
     return Effect.runPromise(
-      Effect.gen(function* () {
-        return yield* makeRequest(
-          `search?q=${encodeURIComponent(query)}&type=${encodeURIComponent(type.toString())}`,
-          SearchResultsMapSchema,
-          options,
-        );
-      }),
+      makeRequest(
+        `search?q=${encodeURIComponent(query)}&type=${encodeURIComponent(type.toString())}`,
+        SearchResultsMapSchema,
+        options,
+      )
     );
   }
 }

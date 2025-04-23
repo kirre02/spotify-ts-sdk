@@ -34,9 +34,7 @@ export class PlayerService extends Data.TaggedClass("PlayerService") {
     options?: MarketAdditionalTypesOptions;
   }): Promise<PlaybackState> {
     return Effect.runPromise(
-      Effect.gen(function* () {
-        return yield* makeRequest("me/player", PlaybackStateSchema, options);
-      }),
+      makeRequest("me/player", PlaybackStateSchema, options)
     );
   }
 
@@ -47,12 +45,10 @@ export class PlayerService extends Data.TaggedClass("PlayerService") {
    */
   getDevices(): Promise<Device[]> {
     return Effect.runPromise(
-      Effect.gen(function* () {
-        return yield* makeRequest(
-          "me/player/devices",
-          Schema.Array(DeviceSchema),
-        );
-      }),
+      makeRequest(
+        "me/player/devices",
+        Schema.Array(DeviceSchema),
+      )
     );
   }
 
@@ -70,13 +66,11 @@ export class PlayerService extends Data.TaggedClass("PlayerService") {
     options?: MarketAdditionalTypesOptions;
   }): Promise<PlaybackState> {
     return Effect.runPromise(
-      Effect.gen(function* () {
-        return yield* makeRequest(
-          "me/player/currently-playing",
-          PlaybackStateSchema,
-          options,
-        );
-      }),
+      makeRequest(
+        "me/player/currently-playing",
+        PlaybackStateSchema,
+        options,
+      )
     );
   }
 
@@ -94,13 +88,11 @@ export class PlayerService extends Data.TaggedClass("PlayerService") {
     options?: DateRangeOptions;
   }): Promise<Page<PlayHistory>> {
     return Effect.runPromise(
-      Effect.gen(function* () {
-        return yield* makeRequest(
-          "me/player/recently-played",
-          PageSchema(PlayHistorySchema),
-          options,
-        );
-      }),
+      makeRequest(
+        "me/player/recently-played",
+        PageSchema(PlayHistorySchema),
+        options,
+      )
     );
   }
 
@@ -111,9 +103,7 @@ export class PlayerService extends Data.TaggedClass("PlayerService") {
    */
   getQueue(): Promise<Queue> {
     return Effect.runPromise(
-      Effect.gen(function* () {
-        return yield* makeRequest("me/player/queue", QueueSchema);
-      }),
+      makeRequest("me/player/queue", QueueSchema)
     );
   }
 }

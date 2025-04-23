@@ -21,9 +21,7 @@ export class UserService extends Data.TaggedClass("UserService") {
    */
   getCurrentUser(): Promise<User> {
     return Effect.runPromise(
-      Effect.gen(function* () {
-        return yield* makeRequest("me", UserSchema);
-      }),
+      makeRequest("me", UserSchema)
     );
   }
 
@@ -44,15 +42,13 @@ export class UserService extends Data.TaggedClass("UserService") {
     options?: TimeRangePaginationOptions;
   }): Promise<Page<Artist | Track>> {
     return Effect.runPromise(
-      Effect.gen(function* () {
-        return yield* makeRequest(
-          `me/top/${encodeURIComponent(type)}`,
-          type === "tracks"
-            ? PageSchema(TrackSchema)
-            : PageSchema(ArtistSchema),
-          options,
-        );
-      }),
+      makeRequest(
+        `me/top/${encodeURIComponent(type)}`,
+        type === "tracks"
+          ? PageSchema(TrackSchema)
+          : PageSchema(ArtistSchema),
+        options,
+      )
     );
   }
 
@@ -67,12 +63,10 @@ export class UserService extends Data.TaggedClass("UserService") {
    */
   getUser({ id }: { id: string }): Promise<User> {
     return Effect.runPromise(
-      Effect.gen(function* () {
-        return yield* makeRequest(
-          `users/${encodeURIComponent(id)}`,
-          UserSchema,
-        );
-      }),
+      makeRequest(
+        `users/${encodeURIComponent(id)}`,
+        UserSchema,
+      )
     );
   }
 
@@ -93,13 +87,11 @@ export class UserService extends Data.TaggedClass("UserService") {
     options?: AfterBasedPaginationOptions;
   }): Promise<FollowedArtist> {
     return Effect.runPromise(
-      Effect.gen(function* () {
-        return yield* makeRequest(
-          `me/following?type=${encodeURIComponent(type)}`,
-          FollowedArtistSchema,
-          options,
-        );
-      }),
+      makeRequest(
+        `me/following?type=${encodeURIComponent(type)}`,
+        FollowedArtistSchema,
+        options,
+      )
     );
   }
 
@@ -121,18 +113,16 @@ export class UserService extends Data.TaggedClass("UserService") {
     ids: string;
     type: "artist" | "user";
   }): Promise<boolean[]> {
-    return Effect.runPromise(
-      Effect.gen(function* () {
-        const encodedIds = ids
-          .split(",")
-          .map((id) => encodeURIComponent(id.trim()))
-          .join(",");
+    const encodedIds = ids
+      .split(",")
+      .map((id) => encodeURIComponent(id.trim()))
+      .join(",");
 
-        return yield* makeRequest(
-          `me/following/contains?type=${type}&ids=${encodedIds}`,
-          Schema.Array(Schema.Boolean),
-        );
-      }),
+    return Effect.runPromise(
+      makeRequest(
+        `me/following/contains?type=${type}&ids=${encodedIds}`,
+        Schema.Array(Schema.Boolean),
+      )
     );
   }
 
@@ -148,12 +138,10 @@ export class UserService extends Data.TaggedClass("UserService") {
    */
   isFollowingPlaylist({ id }: { id: string }): Promise<boolean[]> {
     return Effect.runPromise(
-      Effect.gen(function* () {
-        return yield* makeRequest(
-          `playlist/${encodeURIComponent(id)}/followers/contains`,
-          Schema.Array(Schema.Boolean),
-        );
-      }),
+      makeRequest(
+        `playlist/${encodeURIComponent(id)}/followers/contains`,
+        Schema.Array(Schema.Boolean),
+      )
     );
   }
 }
