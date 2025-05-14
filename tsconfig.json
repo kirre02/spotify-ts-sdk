@@ -15,7 +15,22 @@
     "noEmit": true,
     "lib": [
       "es2022"
-    ]
+    ],
+    "baseUrl": "./src",
+    "paths": {
+      "@internal/*": [
+        "types/*"
+      ],
+      "@services/*": [
+        "services/*"
+      ],
+      "@core/*": [
+        "core/*"
+      ],
+      "@errors/*": [
+        "errors/*"
+      ]
+    }
   },
   "include": [
     "**/*.ts"
