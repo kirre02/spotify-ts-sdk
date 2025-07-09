@@ -1,141 +1,149 @@
-import { Effect, Data, Schema } from "effect";
-import type ICache from "../cache/IChace.js";
+import { Effect, Data, Schema } from "effect"
 import {
     type IAuth,
     type AccessToken,
-    AccessTokenSchema
-} from "./Iauth.js";
-import { FetchError, JsonError } from "../errors";
-import withPKCEStrategy from "./withPKCEStrategy";
+    AccessTokenSchema,
+    SpotifyRawTokenSchema
+} from "./Iauth"
+import { FetchError, JsonError } from "../errors"
+import type ICache from "../cache/ICache"
 
 /**
- * @class withClientCredentials
- * @extends Data.TaggedClass
- * @implements IAuth
- *
- * A service for handling OAuth token management, including caching and fetching new access tokens.
+ * Spotify Client Credentials authentication strategy.
+ * 
+ * Automatically handles token caching and refreshing.
  */
 export default class withClientCredentials
     extends Data.TaggedClass("withClientCredentials")
     implements IAuth {
 
+    private static readonly cacheKey =
+        "spotify-sdk:ClientCredentials:accessToken"
+
     /**
-     * @param {ICache} cache - Cache instance for storing tokens.
-     * @param {string} clientId - The client ID for authentication.
-     * @param {string} clientSecret - The client secret for authentication.
-     * @param {string[]} scopes - The required scopes for the access token
+     * @param cache - Cache instance for storing tokens.
+     * @param clientId - Spotify client ID.
+     * @param clientSecret - Spotify client secret.
+     * @param scopes - Optional OAuth scopes.
      */
     constructor(
-        private cache: ICache,
-        private clientId: string,
-        private clientSecret: string,
-        private scopes: string[] = []
+        private readonly cache: ICache,
+        private readonly clientId: string,
+        private readonly clientSecret: string,
+        private readonly scopes: string[] = []
     ) {
-        super();
+        super()
     }
 
-    private static readonly cacheKey = "spotify-sdk:AuthorizationCodeWithPKCEStrategy:token";
+    /**
+     * Returns a valid access token, fetching and caching if necessary.
+     */
+    public getAccessToken(): Promise<AccessToken> {
+        return Effect.runPromise(
+            this.getCachedToken().pipe(
+                Effect.flatMap((cached) =>
+                    cached && !this.isExpired(cached)
+                        ? Effect.succeed(cached)
+                        : this.fetchAndCacheToken()
+                )
+            )
+        )
+    }
+
+    // ──────────────────────────────────────────────────────────────
+    // Private Helpers
+    // ──────────────────────────────────────────────────────────────
 
     /**
-     * Retrieves an access token from the cache or fetches a new one if none exists.
-     * 
-     * @returns {Promise<AccessToken>} A promise that resolves with an access token.
+     * Attempts to retrieve and decode a cached access token.
      */
-    getOrCreateAccessToken(): Promise<AccessToken> {
-        const self = this;
+    private getCachedToken(): Effect.Effect<AccessToken | null, never> {
+        return this.cache.get(withClientCredentials.cacheKey).pipe(
+            Effect.flatMap((rawToken) =>
+                rawToken
+                    ? Schema.decode(AccessTokenSchema)(JSON.parse(rawToken))
+                    : Effect.succeed(null)
+            ),
+            Effect.catchAll(() => Effect.succeed(null)) // fallback if decode fails
+        )
+    }
 
-        return Effect.runPromise(
-            Effect.gen(function*() {
-                const cachedToken = yield* self.cache.get(withClientCredentials.cacheKey);
+    /**
+     * Fetches a new access token and caches it with its expiration.
+     */
+    private fetchAndCacheToken(): Effect.Effect<AccessToken, Error> {
+        return this.fetchNewToken().pipe(
+            Effect.flatMap((token) =>
+                this.cache
+                    .set(
+                        withClientCredentials.cacheKey,
+                        JSON.stringify(token),
+                    )
+                    .pipe(Effect.as(token))
+            )
+        )
+    }
 
-                if (cachedToken) {
-                    return yield* Schema.decode(AccessTokenSchema)({
-                        token: cachedToken,
-                        expiresAt: Date.now() + 3600 * 1000,
-                    });
+    /**
+     * Fetches a new access token from Spotify API.
+     */
+    private fetchNewToken(): Effect.Effect<AccessToken, Error> {
+        const url = "https://accounts.spotify.com/api/token"
+        const body = new URLSearchParams({
+            grant_type: "client_credentials",
+            scope: this.scopes.join(" ")
+        }).toString()
+
+        return Effect.tryPromise({
+            try: () =>
+                fetch(url, {
+                    method: "POST",
+                    headers: {
+                        Authorization: `Basic ${Buffer.from(
+                            `${this.clientId}:${this.clientSecret}`
+                        ).toString("base64")}`,
+                        "Content-Type": "application/x-www-form-urlencoded"
+                    },
+                    body
+                }),
+            catch: () => new FetchError()
+        }).pipe(
+            Effect.flatMap((response) => {
+                if (!response.ok) {
+                    return Effect.fail(
+                        new Error(
+                            `Spotify token API error: ${response.status} ${response.statusText}`
+                        )
+                    )
                 }
-
-                const newToken = yield* self.fetchNewToken();
-
-                yield* self.cache.set(withClientCredentials.cacheKey, newToken.token);
-
-                return newToken;
-            })
-        );
-    }
-
-    /**
-     * Retrieves an access token from the cache.
-     * 
-     * @returns {Promise<AccessToken | null>} A promise that resolves with the cached access token or null if not found.
-     */
-    getAccessToken(): Promise<AccessToken | null> {
-        const self = this;
-
-        return Effect.runPromise(
-            Effect.gen(function*() {
-                const cachedToken = yield* self.cache.get(withClientCredentials.cacheKey);
-
-                if (!cachedToken) return null;
-
-                return yield* Schema.decode(AccessTokenSchema)({
-                    token: cachedToken,
-                    expiresAt: Date.now() + 3600 * 1000,
-                });
-            })
-        );
-    }
-
-    /**
-     * Removes the access token from the cache.
-     */
-    public removeAccessToken(): void {
-        Effect.runPromise(this.cache.remove(withClientCredentials.cacheKey));
-    }
-
-    /**
-     * Fetches a new access token from the authentication server.
-     * 
-     * @private
-     * @returns {Effect.Effect<string>} An Effect that resolves with a new access token.
-     */
-    private fetchNewToken() {
-        const { clientId, clientSecret, scopes } = this;
-
-        return Effect.gen(function*() {
-            const url = "https://accounts.spotify.com/api/token";
-            const options = {
-                grant_type: 'client_credentials',
-                scope: scopes.join(' ')
-            } as any;
-
-            const body = Object.keys(options).map(key => key + '=' + options[key]).join('&');
-            const response = yield* Effect.tryPromise({
-                try: () =>
-                    fetch(url, {
-                        method: "POST",
-                        headers: {
-                            "Authorization": `Basic ${Buffer.from(`${clientId}:${clientSecret}`).toString("base64")}`,
-                            "Content-Type": "application/x-www-form-urlencoded",
-                        },
-                        body: body,
+                return Effect.tryPromise({
+                    try: () => response.json(),
+                    catch: () => new JsonError()
+                })
+            }),
+            Effect.flatMap((data) =>
+                // @ts-ignore
+                Schema.decode(SpotifyRawTokenSchema)(data).pipe(
+                    Effect.flatMap(({ access_token, expires_in }) => {
+                        const token: AccessToken = {
+                            token: access_token,
+                            expiresAt: Date.now() + expires_in * 1000,
+                        };
+                        return Effect.succeed(token);
                     }),
-                catch: () => new FetchError(),
-            });
+                    Effect.catchAll(() =>
+                        Effect.fail(new Error("Invalid token response shape"))
+                    )
+                )
+            )
+        )
+    }
 
-            const data = yield* Effect.tryPromise({
-                try: () => response.json(),
-                catch: () => new JsonError(),
-            });
 
-            // @ts-ignore
-            if (!data.access_token) {
-                return yield* Effect.fail(new Error("Invalid token response"));
-            }
-
-            //@ts-ignore
-            return data.access_token;
-        });
+    /**
+     * Checks if an access token is expired.
+     */
+    private isExpired(token: AccessToken): boolean {
+        return Date.now() >= token.expiresAt - 60 * 1000 // refresh 60s before expiry
     }
 }
-
