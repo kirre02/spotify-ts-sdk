@@ -13,6 +13,20 @@ export const PageSchema = <T>(itemSchema: S.Schema<T>) =>
 
 export type Page<T> = S.Schema.Type<ReturnType<typeof PageSchema<T>>>;
 
+export const CachableItemSchema = S.Struct({
+  expires: S.NullOr(S.Number),
+  expiresOnAccess: S.NullOr(S.Boolean)
+});
+
+type CachableItem = S.Schema.Type<typeof CachableItemSchema>
+
+export const VerifierSchema = S.Struct({
+  ...CachableItemSchema.fields,
+  verifier: S.String,
+})
+
+export type Verifier = S.Schema.Type<typeof VerifierSchema>;
+
 const CopyrightSchema = S.Struct({
   text: S.String,
   type: S.String,
