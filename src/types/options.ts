@@ -1,60 +1,4 @@
-import { Config, Effect, Schema } from "effect";
-import { FetchError, JsonError } from "../errors";
-
-export interface IEntity<T> {
-  get({ id, options }: { id: string; options?: AllOptions }): Promise<T>;
-  getMany({
-    ids,
-    options,
-  }: {
-    ids: string;
-    options?: AllOptions;
-  }): Promise<T[]>;
-}
-
-export function makeRequest(
-  route: string,
-  schema: Schema.Schema<any>,
-  options?: AllOptions,
-) {
-  return Effect.gen(function* () {
-    const baseUrl = "https://api.spotify.com/v1/";
-
-    const params = new URLSearchParams();
-    if (options) {
-      Object.entries(options as Record<string, string | number>).forEach(
-        ([key, value]) => {
-          if (value !== undefined) params.append(key, value.toString());
-        },
-      );
-    }
-
-    const url = params.toString()
-      ? `${baseUrl}${route}?${params.toString()}`
-      : `${baseUrl}${route}`;
-
-    const response = yield* Effect.tryPromise({
-      try: () =>
-        fetch(url, {
-          headers: {
-            Authorization: `Bearer ${yield* Config.redacted("SPOTIFY_API_KEY")}`,
-          },
-        }),
-      catch: () => new FetchError(),
-    });
-
-    if (!response.ok) {
-      return yield* new FetchError();
-    }
-
-    const json = yield* Effect.tryPromise({
-      try: () => response.json(),
-      catch: () => new JsonError(),
-    });
-
-    return yield* Schema.decodeUnknown(schema)(json);
-  });
-}
+import type { Range } from "@internal/index";
 
 type Market =
   | "AD"
@@ -820,134 +764,359 @@ type Code<T> = T extends keyof Country
 
 type Locale = Code<keyof Country>;
 
-type Limit =
-  | 1
-  | 2
-  | 3
-  | 4
-  | 5
-  | 6
-  | 7
-  | 8
-  | 9
-  | 10
-  | 11
-  | 12
-  | 13
-  | 14
-  | 15
-  | 16
-  | 17
-  | 18
-  | 19
-  | 20
-  | 21
-  | 22
-  | 23
-  | 24
-  | 25
-  | 26
-  | 27
-  | 28
-  | 29
-  | 30
-  | 31
-  | 32
-  | 33
-  | 34
-  | 35
-  | 36
-  | 37
-  | 38
-  | 39
-  | 40
-  | 41
-  | 42
-  | 43
-  | 44
-  | 45
-  | 46
-  | 47
-  | 48
-  | 49
-  | 50;
+type Limit = Range<1, 50>;
 
-export interface MarketOnlyOptions {
+export type MarketOnlyOptions = {
+  /**
+   * An ISO 3166-1 alpha-2 country code
+   * @see {@link https://en.wikipedia.org/wiki/ISO_3166-1_alpha-2|ISO 3166-1 alpha-2}
+   */
   market?: Market;
-}
+};
 
-export interface LocaleOnlyOptions {
+export type LocaleOnlyOptions = {
+  /**
+   * The desired language, consisting of an ISO 639-1 language code and an ISO 3166-1 alpha-2 country code, joined by an underscore.
+   * Provide this parameter if you want the category strings returned in a particular language.
+   *
+   * @remarks
+   * If `locale` is not supplied, or if the specified language is not available,
+   * the category strings returned will be in the Spotify default language (American English)
+   *
+   * @see {@link https://en.wikipedia.org/wiki/ISO_639-1|ISO 639-1}
+   * @see {@link https://en.wikipedia.org/wiki/ISO_3166-1_alpha-2|ISO 3166-1 alpha-2}
+   */
   locale?: Locale;
-}
+};
 
-export interface PaginatedMarketOptions {
+export type PaginatedMarketOptions = {
+  /**
+   * An ISO 3166-1 alpha-2 country code
+   * @see {@link https://en.wikipedia.org/wiki/ISO_3166-1_alpha-2|ISO 3166-1 alpha-2}
+   */
   market?: Market;
+  /**
+   * The maximum number of items to return.
+   *
+   * @remarks
+   *
+   * Default: 20.
+   * Minimum: 1.
+   * Maximum: 50.
+   */
   limit?: Limit;
+  /**
+   * The index of the first item to return.
+   *
+   * @remarks
+   *
+   * Use with limit to get the next set of items.
+   * Default: 0 (the first item).
+   */
   offset?: number;
-}
+};
 
-export interface PaginationOptions {
+export type PaginationOptions = {
+  /**
+   * The maximum number of items to return.
+   *
+   * @remarks
+   *
+   * Default: 20.
+   * Minimum: 1.
+   * Maximum: 50.
+   */
   limit?: Limit;
+  /**
+   * The index of the first item to return.
+   *
+   * @remarks
+   *
+   * Use with limit to get the next set of items.
+   * Default: 0 (the first item).
+   */
   offset?: number;
-}
+};
 
-export interface AlbumRetrievalOptions {
+export type AlbumRetrievalOptions = {
+  /**
+   * A list of keywords that will be used to filter the response. If not supplied, all album types will be returned.
+   */
   include_groups?: ("album" | "single" | "appears_on" | "compilation")[];
+  /**
+   * An ISO 3166-1 alpha-2 country code
+   * @see {@link https://en.wikipedia.org/wiki/ISO_3166-1_alpha-2|ISO 3166-1 alpha-2}
+   */
   market?: Market;
+  /**
+   * The maximum number of items to return.
+   *
+   * @remarks
+   *
+   * Default: 20.
+   * Minimum: 1.
+   * Maximum: 50.
+   */
   limit?: Limit;
+  /**
+   * The index of the first item to return.
+   *
+   * @remarks
+   *
+   * Use with limit to get the next set of items.
+   * Default: 0 (the first item).
+   */
   offset?: number;
-}
+};
 
-export interface LocalizedPaginationOptions {
+export type LocalizedPaginationOptions = {
+  /**
+   * The desired language, consisting of an ISO 639-1 language code and an ISO 3166-1 alpha-2 country code, joined by an underscore.
+   * Provide this parameter if you want the category strings returned in a particular language.
+   *
+   * @remarks
+   * If `locale` is not supplied, or if the specified language is not available,
+   * the category strings returned will be in the Spotify default language (American English)
+   *
+   * @see {@link https://en.wikipedia.org/wiki/ISO_639-1|ISO 639-1}
+   * @see {@link https://en.wikipedia.org/wiki/ISO_3166-1_alpha-2|ISO 3166-1 alpha-2}
+   */
   locale?: Locale;
+  /**
+   * The maximum number of items to return.
+   *
+   * @remarks
+   *
+   * Default: 20.
+   * Minimum: 1.
+   * Maximum: 50.
+   */
   limit?: Limit;
+  /**
+   * The index of the first item to return.
+   *
+   * @remarks
+   *
+   * Use with limit to get the next set of items.
+   * Default: 0 (the first item).
+   */
   offset: number;
-}
+};
 
-export interface MarketAdditionalTypesOptions {
+export type MarketAdditionalTypesOptions = {
+  /**
+   * An ISO 3166-1 alpha-2 country code
+   * @see {@link https://en.wikipedia.org/wiki/ISO_3166-1_alpha-2|ISO 3166-1 alpha-2}
+   */
   market?: Market;
+  /**
+   * A list of item types that your client supports besides the default track type.
+   *
+   * @remarks
+   * Valid types are:
+   *
+   * * `track`
+   * * `episode`
+   */
   additional_types?: ("track" | "episode")[];
-}
+};
 
-export interface DateRangeOptions {
-  limit?: Limit;
-  after?: number;
-  before?: number;
-}
+export type DateRangeOptions =
+  | {
+      /**
+       * The maximum number of items to return.
+       *
+       * @remarks
+       *
+       * Default: 20.
+       * Minimum: 1.
+       * Maximum: 50.
+       */
+      limit?: Limit;
+      /**
+       * A Unix timestamp in milliseconds. Returns all items before (but not including) this cursor position.
+       * If `before` is specified, `after` must not be specified
+       */
+      before?: number;
+    }
+  | {
+      /**
+       * The maximum number of items to return.
+       *
+       * @remarks
+       *
+       * Default: 20.
+       * Minimum: 1.
+       * Maximum: 50.
+       */
+      limit?: Limit;
+      /**
+       * A Unix timestamp in milliseconds. Returns all items after (but not including) this cursor position.
+       * If `after` is specified, `before` must not be specified.
+       */
+      after?: number;
+    };
 
-export interface MarketFieldOptions {
+export type MarketFieldOptions = {
+  /**
+   * An ISO 3166-1 alpha-2 country code
+   * @see {@link https://en.wikipedia.org/wiki/ISO_3166-1_alpha-2|ISO 3166-1 alpha-2}
+   */
   market?: Market;
-  fields?: string;
-  additional_types?: string;
-}
+  /**
+   * Filters for the query: a list of the fields to return. If omitted, all fields are returned.
+   * For example, to get just the playlist's description and URI: `fields=["description", "uri"]`.
+   * A dot separator can be used to specify non-reoccurring fields, while parentheses can be used to specify reoccurring fields within objects.
+   * For example, to get just the added date and user ID of the adder: `fields=["tracks.items(added_at, added_by.id)"]`.
+   * Use multiple parentheses to drill down into nested objects, for example: `fields=["tracks.items(track(name,href,album(name,href)))"]`.
+   * Fields can be excluded by prefixing them with an exclamation mark, for example: `fields=["tracks.items(track(name,href,album(!name,href)))"]`
+   */
+  fields?: string[];
+  /**
+   * A list of item types that your client supports besides the default track type.
+   *
+   * @remarks
+   * Valid types are:
+   *
+   * * `track`
+   * * `episode`
+   */
+  additional_types?: ("track" | "episode")[];
+};
 
-export interface DetailedMarketPaginationOptions {
+export type DetailedMarketPaginationOptions = {
+  /**
+   * An ISO 3166-1 alpha-2 country code
+   * @see {@link https://en.wikipedia.org/wiki/ISO_3166-1_alpha-2|ISO 3166-1 alpha-2}
+   */
   market?: Market;
-  fields?: string;
+  /**
+   * Filters for the query: a list of the fields to return. If omitted, all fields are returned.
+   * For example, to get just the total number of items and the request limit: `fields=["total", "limit"]`.
+   * A dot separator can be used to specify non-reoccurring fields, while parentheses can be used to specify reoccurring fields within objects.
+   * For example, to get just the added date and user ID of the adder: `fields=["items(added_at,added_by.id)"]`.
+   * Use multiple parentheses to drill down into nested objects, for example: `fields=["items(track(name,href,album(name,href)))"]`.
+   * Fields can be excluded by prefixing them with an exclamation mark, for example: `fields=["items.track.album(!external_urls,images)"]`
+   */
+  fields?: string[];
+  /**
+   * The maximum number of items to return.
+   *
+   * @remarks
+   *
+   * Default: 20.
+   * Minimum: 1.
+   * Maximum: 50.
+   */
   limit?: Limit;
+  /**
+   * The index of the first item to return.
+   *
+   * @remarks
+   *
+   * Use with limit to get the next set of items.
+   * Default: 0 (the first item).
+   */
   offset?: number;
-  additional_types?: string;
-}
+  /**
+   * A list of item types that your client supports besides the default track type.
+   *
+   * @remarks
+   * Valid types are:
+   *
+   * * `track`
+   * * `episode`
+   */
+  additional_types?: ("track" | "episode")[];
+};
 
-export interface MarketExternalOptions {
+export type MarketExternalOptions = {
+  /**
+   * An ISO 3166-1 alpha-2 country code
+   * @see {@link https://en.wikipedia.org/wiki/ISO_3166-1_alpha-2|ISO 3166-1 alpha-2}
+   */
   market?: Market;
+  /**
+   * The maximum number of items to return.
+   *
+   * @remarks
+   *
+   * Default: 20.
+   * Minimum: 1.
+   * Maximum: 50.
+   */
   limit?: Limit;
+  /**
+   * The index of the first item to return.
+   *
+   * @remarks
+   *
+   * Use with limit to get the next set of items.
+   * Default: 0 (the first item).
+   */
   offset?: number;
+  /**
+   * If this field is set to `audio` it signals that the client can play externally hosted audio content,
+   * and marks the content as playable in the response.
+   * By default externally hosted audio content is marked as unplayable in the response
+   */
   include_external?: "audio";
-}
+};
 
-export interface TimeRangePaginationOptions {
+export type TimeRangePaginationOptions = {
+  /**
+   * Over what time frame the affinities are computed.
+   *
+   * @remarks
+   *
+   * Valid values:
+   *
+   * * long_term (calculated from ~1 year of data and including all new data as it becomes available)
+   * * medium_term (approximately last 6 months)
+   * * short_term (approximately last 4 weeks)
+   *
+   * Default: `"medium_term"`
+   */
   time_range?: "long_term" | "medium_term" | "short_term";
+  /**
+   * The maximum number of items to return.
+   *
+   * @remarks
+   *
+   * Default: 20.
+   * Minimum: 1.
+   * Maximum: 50.
+   */
   limit?: Limit;
+  /**
+   * The index of the first item to return.
+   *
+   * @remarks
+   *
+   * Use with limit to get the next set of items.
+   * Default: 0 (the first item).
+   */
   offset?: number;
-}
+};
 
-export interface AfterBasedPaginationOptions {
+export type AfterBasedPaginationOptions = {
+  /**
+   * The last artist ID retrieved from the previous request.
+   */
   after?: string;
+  /**
+   * The maximum number of items to return.
+   *
+   * @remarks
+   *
+   * Default: 20.
+   * Minimum: 1.
+   * Maximum: 50.
+   */
   limit?: Limit;
-}
+};
 
-type AllOptions =
+export type AllOptions =
   | MarketOnlyOptions
   | LocaleOnlyOptions
   | PaginatedMarketOptions
