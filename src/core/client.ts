@@ -1,5 +1,6 @@
-import { Config, Duration, Effect, Schema, Option, Schedule } from "effect";
+import { Duration, Effect, Schema, Option, Schedule } from "effect";
 import {
+	type ApiError,
 	BadRequestError,
 	ForbiddenError,
 	JsonParseError,
@@ -12,8 +13,6 @@ import {
 } from "@errors/index";
 import type { AllOptions } from "@internal/options";
 import { ErrorSchema } from "@internal/schemas";
-import { MemoryCache } from "cache/memoryCache";
-import withClientCredentials from "auth/withClientCredentials";
 import { AuthService } from "auth";
 
 export function makeRequest({
@@ -30,7 +29,7 @@ export function makeRequest({
 	options?: AllOptions;
 	customHeaders?: Record<string, string>;
 	body?: string;
-}) {
+}): Effect.Effect<any, ApiError, AuthService> {
 	const baseUrl = "https://api.spotify.com/v1/";
 	const url = new URL(`${baseUrl}${route}`);
 
@@ -47,24 +46,9 @@ export function makeRequest({
 		});
 	}
 
-	/*const cache = new MemoryCache();
-	const tokenClass = new withClientCredentials(
-		cache,
-		"1d3962f6f2474934b12a5a7f4cfd7da9",
-		"42868524178041c68898dc11c6a0b3b5",
-	);*/
-
-	/*const headers = {
-		Authorization: `Bearer ${token}`,
-		...customHeaders,
-	};*/
-
 	return Effect.gen(function* () {
 		const authService = yield* AuthService;
 		const token = yield* authService.getToken;
-		/*const { token } = yield* Effect.tryPromise(() =>
-			tokenClass.getAccessToken(),
-		);*/
 
 		const response = yield* Effect.tryPromise({
 			try: () =>
@@ -146,14 +130,37 @@ export function makeRequest({
 			),
 		);
 	}).pipe(
-		/*Effect.retry({
-			schedule: Schedule.fromFunction((error) => {
-				if (error._tag === "RateLimitError") {
-					return Schedule.fromDelay(error.retryAfter);
-				}
-
-				return Schedule.once;
-			}),
-		}),*/
+		Effect.tapError((error) => {
+			if (error._tag === "RateLimitError") {
+				return Effect.sleep(error.retryAfter);
+			}
+			return Effect.void;
+		}),
+		Effect.retry({
+			while: (error) =>
+				error._tag === "RateLimitError" ||
+				error._tag === "UnauthorizedError" ||
+				error._tag === "NetworkError",
+			schedule: Schedule.union(
+				Schedule.union(
+					Schedule.recurs(3).pipe(
+						Schedule.whileInput(
+							(error: ApiError) => error._tag === "RateLimitError",
+						),
+					),
+					Schedule.once.pipe(
+						Schedule.whileInput(
+							(error: ApiError) => error._tag === "UnauthorizedError",
+						),
+					),
+				),
+				Schedule.exponential(Duration.seconds(1), 2).pipe(
+					Schedule.compose(Schedule.recurs(3)),
+					Schedule.whileInput(
+						(error: ApiError) => error._tag === "NetworkError",
+					),
+				),
+			),
+		}),
 	);
 }
