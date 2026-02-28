@@ -15,7 +15,10 @@ import type { AllOptions } from "@internal/options";
 import { ErrorSchema } from "@internal/schemas";
 import { AuthService } from "auth";
 
-export function makeRequest({
+// Use generic sceham for the schema param
+// then get the types from infering
+
+export function makeRequest<T, I, R>({
 	method = "GET",
 	route,
 	schema,
@@ -25,11 +28,11 @@ export function makeRequest({
 }: {
 	method?: "GET" | "POST" | "PUT" | "PATCH" | "DELETE";
 	route: string;
-	schema: Schema.Schema<any>;
+	schema: Schema.Schema<T, I, R>;
 	options?: AllOptions;
 	customHeaders?: Record<string, string>;
 	body?: string;
-}): Effect.Effect<any, ApiError, AuthService> {
+}): Effect.Effect<T, ApiError, AuthService | R> {
 	const baseUrl = "https://api.spotify.com/v1/";
 	const url = new URL(`${baseUrl}${route}`);
 
