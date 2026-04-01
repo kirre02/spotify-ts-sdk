@@ -5,14 +5,18 @@ import type {
 	MarketOnlyOptions,
 	PaginatedMarketOptions,
 } from "@internal/options";
-import { PageSchema, SavedTrackSchema, TrackSchema } from "@internal/schemas";
-import type { Page, SavedTrack, Track } from "@internal/index";
-import type {
-	CheckSavedTrackRequest,
-	GetSeveralTrackRequest,
-	GetTrackRequest,
-	RemoveTrackRequest,
-	SaveTrackRequest,
+import {
+	GetSavedTrackResponseSchema,
+	GetSeveralTrackResponseSchema,
+	GetTrackResponseSchema,
+	type CheckSavedTrackRequest,
+	type GetSavedTrackResponse,
+	type GetSeveralTrackRequest,
+	type GetSeveralTrackResponse,
+	type GetTrackRequest,
+	type GetTrackResponse,
+	type RemoveTrackRequest,
+	type SaveTrackRequest,
 } from "@internal/services/track";
 import type { ApiError } from "@errors/index";
 import type { AuthService } from "auth";
@@ -23,14 +27,14 @@ export class TrackService extends Context.Tag("TrackService")<
 		readonly get: (
 			request: GetTrackRequest,
 			options?: MarketOnlyOptions,
-		) => Effect.Effect<Track, ApiError, AuthService>;
+		) => Effect.Effect<GetTrackResponse, ApiError, AuthService>;
 		readonly getMany: (
 			request: GetSeveralTrackRequest,
 			options?: MarketOnlyOptions,
-		) => Effect.Effect<Track[], ApiError, AuthService>;
+		) => Effect.Effect<GetSeveralTrackResponse, ApiError, AuthService>;
 		readonly getSaved: (
 			options?: PaginatedMarketOptions,
-		) => Effect.Effect<Page<SavedTrack>, ApiError, AuthService>;
+		) => Effect.Effect<GetSavedTrackResponse, ApiError, AuthService>;
 		readonly save: (
 			request: SaveTrackRequest,
 		) => Effect.Effect<void, ApiError, AuthService>;
@@ -39,7 +43,7 @@ export class TrackService extends Context.Tag("TrackService")<
 		) => Effect.Effect<void, ApiError, AuthService>;
 		readonly checkSaved: (
 			request: CheckSavedTrackRequest,
-		) => Effect.Effect<boolean[], ApiError, AuthService>;
+		) => Effect.Effect<readonly boolean[], ApiError, AuthService>;
 	}
 >() {}
 
@@ -52,7 +56,7 @@ export const TrackServiceLive = Layer.effect(
 
 				return makeRequest({
 					route: `tracks/${id.trim()}`,
-					schema: TrackSchema,
+					schema: GetTrackResponseSchema,
 					options,
 				});
 			},
@@ -73,14 +77,22 @@ export const TrackServiceLive = Layer.effect(
 
 				return makeRequest({
 					route: `tracks?ids=${encodedIds}`,
-					schema: Schema.Array(TrackSchema),
+					schema: GetSeveralTrackResponseSchema,
 					options,
 				});
 			},
 			getSaved: (options?: PaginatedMarketOptions) => {
+				if (options?.limit !== undefined) {
+					if (options.limit < 0 || options.limit > 50) {
+						throw new IllegalArgumentException(
+							"Limit must be between 0 and 50",
+						);
+					}
+				}
+
 				return makeRequest({
 					route: "me/tracks",
-					schema: PageSchema(SavedTrackSchema),
+					schema: GetSavedTrackResponseSchema,
 					options,
 				});
 			},

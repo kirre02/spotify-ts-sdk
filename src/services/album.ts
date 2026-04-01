@@ -5,28 +5,24 @@ import type {
 	PaginatedMarketOptions,
 	PaginationOptions,
 } from "@internal/options";
-import type {
-	Album,
-	Page,
-	SavedAlbum,
-	SimplifiedAlbum,
-	Track,
-} from "@internal/index";
-import {
-	AlbumSchema,
-	PageSchema,
-	SavedAlbumSchema,
-	SimplifiedAlbumSchema,
-	TrackSchema,
-} from "@internal/schemas";
 import { IllegalArgumentException } from "effect/Cause";
-import type {
-	CheckSavedAlbumRequest,
-	GetAlbumRequest,
-	GetAlbumTracksRequest,
-	GetSeveralAlbumRequest,
-	RemoveAlbumRequest,
-	SaveAlbumRequest,
+import {
+	GetAlbumResponseSchema,
+	GetAlbumTracksResponseSchema,
+	GetNewReleasesResponseSchema,
+	GetSavedAlbumResponseSchema,
+	GetSeveralAlbumResponseSchema,
+	type CheckSavedAlbumRequest,
+	type GetAlbumRequest,
+	type GetAlbumResponse,
+	type GetAlbumTracksRequest,
+	type GetAlbumTracksResponse,
+	type GetNewReleasesResponse,
+	type GetSavedAlbumResponse,
+	type GetSeveralAlbumRequest,
+	type GetSeveralAlbumResponse,
+	type RemoveAlbumRequest,
+	type SaveAlbumRequest,
 } from "@internal/services/album";
 import type { ApiError } from "@errors/index";
 import type { AuthService } from "auth";
@@ -37,18 +33,18 @@ export class AlbumService extends Context.Tag("AlbumService")<
 		readonly get: (
 			request: GetAlbumRequest,
 			options?: MarketOnlyOptions,
-		) => Effect.Effect<Album, ApiError, AuthService>;
+		) => Effect.Effect<GetAlbumResponse, ApiError, AuthService>;
 		readonly getMany: (
 			request: GetSeveralAlbumRequest,
 			options?: MarketOnlyOptions,
-		) => Effect.Effect<Album[], ApiError, AuthService>;
+		) => Effect.Effect<GetSeveralAlbumResponse, ApiError, AuthService>;
 		readonly getTracks: (
 			request: GetAlbumTracksRequest,
 			options?: PaginatedMarketOptions,
-		) => Effect.Effect<Page<Track>, ApiError, AuthService>;
+		) => Effect.Effect<GetAlbumTracksResponse, ApiError, AuthService>;
 		readonly getSaved: (
 			options?: PaginatedMarketOptions,
-		) => Effect.Effect<Page<SavedAlbum>, ApiError, AuthService>;
+		) => Effect.Effect<GetSavedAlbumResponse, ApiError, AuthService>;
 		readonly save: (
 			request: SaveAlbumRequest,
 		) => Effect.Effect<void, ApiError, AuthService>;
@@ -57,10 +53,10 @@ export class AlbumService extends Context.Tag("AlbumService")<
 		) => Effect.Effect<void, ApiError, AuthService>;
 		readonly checkSaved: (
 			request: CheckSavedAlbumRequest,
-		) => Effect.Effect<boolean[], ApiError, AuthService>;
+		) => Effect.Effect<readonly boolean[], ApiError, AuthService>;
 		readonly getNewReleases: (
 			options?: PaginationOptions,
-		) => Effect.Effect<Page<SimplifiedAlbum>, ApiError, AuthService>;
+		) => Effect.Effect<GetNewReleasesResponse, ApiError, AuthService>;
 	}
 >() {}
 
@@ -73,7 +69,7 @@ export const AlbumServiceLive = Layer.effect(
 
 				return makeRequest({
 					route: `albums/${id.trim()}`,
-					schema: AlbumSchema,
+					schema: GetAlbumResponseSchema,
 					options,
 				});
 			},
@@ -94,7 +90,7 @@ export const AlbumServiceLive = Layer.effect(
 
 				return makeRequest({
 					route: `albums?ids=${encodedIds}`,
-					schema: Schema.Array(AlbumSchema),
+					schema: GetSeveralAlbumResponseSchema,
 					options,
 				});
 			},
@@ -104,16 +100,32 @@ export const AlbumServiceLive = Layer.effect(
 			) => {
 				const { id } = request;
 
+				if (options?.limit !== undefined) {
+					if (options.limit < 0 || options.limit > 50) {
+						throw new IllegalArgumentException(
+							"Limit must be between 0 and 50",
+						);
+					}
+				}
+
 				return makeRequest({
 					route: `albums/${id.trim()}/tracks`,
-					schema: PageSchema(TrackSchema),
+					schema: GetAlbumTracksResponseSchema,
 					options,
 				});
 			},
 			getSaved: (options?: PaginatedMarketOptions) => {
+				if (options?.limit !== undefined) {
+					if (options.limit < 0 || options.limit > 50) {
+						throw new IllegalArgumentException(
+							"Limit must be between 0 and 50",
+						);
+					}
+				}
+
 				return makeRequest({
 					route: "me/albums",
-					schema: PageSchema(SavedAlbumSchema),
+					schema: GetSavedAlbumResponseSchema,
 					options,
 				});
 			},
@@ -171,9 +183,16 @@ export const AlbumServiceLive = Layer.effect(
 				});
 			},
 			getNewReleases: (options?: PaginationOptions) => {
+				if (options?.limit !== undefined) {
+					if (options.limit < 0 || options.limit > 50) {
+						throw new IllegalArgumentException(
+							"Limit must be between 0 and 50",
+						);
+					}
+				}
 				return makeRequest({
 					route: `browse/new-releases`,
-					schema: PageSchema(SimplifiedAlbumSchema),
+					schema: GetNewReleasesResponseSchema,
 					options,
 				});
 			},

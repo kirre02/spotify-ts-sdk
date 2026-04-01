@@ -1,34 +1,28 @@
 import { Context, Effect, Layer, Schema } from "effect";
 import { IllegalArgumentException } from "effect/Cause";
-import {
-	ArtistSchema,
-	FollowedArtistSchema,
-	PageSchema,
-	TrackSchema,
-	UserSchema,
-} from "@internal/schemas";
-import type {
-	Artist,
-	FollowedArtist,
-	Page,
-	Track,
-	User,
-} from "@internal/index";
 import { makeRequest } from "@core/client";
 import type {
 	AfterBasedPaginationOptions,
 	TimeRangePaginationOptions,
 } from "@internal/options";
-import type {
-	CheckUserFollowPlaylistRequest,
-	CheckUserFollowRequest,
-	GetFollowedArtistRequest,
-	GetTopItemsRequest,
-	GetUserProfileRequest,
-	UserFollowPlaylistRequest,
-	UserFollowRequest,
-	UserUnfollowPlaylistRequest,
-	UserUnfollowRequest,
+import {
+	GetCurrentUserResponseSchema,
+	GetFollowedArtistResponseSchema,
+	GetTopItemsResponseSchema,
+	GetUserProfileResponseSchema,
+	type CheckUserFollowPlaylistRequest,
+	type CheckUserFollowRequest,
+	type GetCurrentUserResponse,
+	type GetFollowedArtistRequest,
+	type GetFollowedArtistResponse,
+	type GetTopItemsRequest,
+	type GetTopItemsResponse,
+	type GetUserProfileRequest,
+	type GetUserProfileResponse,
+	type UserFollowPlaylistRequest,
+	type UserFollowRequest,
+	type UserUnfollowPlaylistRequest,
+	type UserUnfollowRequest,
 } from "@internal/services/user";
 import type { ApiError } from "@errors/index";
 import type { AuthService } from "auth";
@@ -36,14 +30,18 @@ import type { AuthService } from "auth";
 export class UserService extends Context.Tag("UserService")<
 	UserService,
 	{
-		readonly getCurrentUser: () => Effect.Effect<User, ApiError, AuthService>;
+		readonly getCurrentUser: () => Effect.Effect<
+			GetCurrentUserResponse,
+			ApiError,
+			AuthService
+		>;
 		readonly getTopItems: (
 			request: GetTopItemsRequest,
 			options?: TimeRangePaginationOptions,
-		) => Effect.Effect<Page<Artist | Track>, ApiError, AuthService>;
+		) => Effect.Effect<GetTopItemsResponse, ApiError, AuthService>;
 		readonly getUser: (
 			request: GetUserProfileRequest,
-		) => Effect.Effect<User, ApiError, AuthService>;
+		) => Effect.Effect<GetUserProfileResponse, ApiError, AuthService>;
 		readonly followPlaylist: (
 			request: UserFollowPlaylistRequest,
 		) => Effect.Effect<void, ApiError, AuthService>;
@@ -53,7 +51,7 @@ export class UserService extends Context.Tag("UserService")<
 		readonly getFollowedArtists: (
 			request: GetFollowedArtistRequest,
 			options?: AfterBasedPaginationOptions,
-		) => Effect.Effect<FollowedArtist, ApiError, AuthService>;
+		) => Effect.Effect<GetFollowedArtistResponse, ApiError, AuthService>;
 		readonly follow: (
 			request: UserFollowRequest,
 		) => Effect.Effect<void, ApiError, AuthService>;
@@ -62,10 +60,10 @@ export class UserService extends Context.Tag("UserService")<
 		) => Effect.Effect<void, ApiError, AuthService>;
 		readonly checkFollowed: (
 			request: CheckUserFollowRequest,
-		) => Effect.Effect<boolean[], ApiError, AuthService>;
+		) => Effect.Effect<readonly boolean[], ApiError, AuthService>;
 		readonly isFollowingPlaylist: (
 			request: CheckUserFollowPlaylistRequest,
-		) => Effect.Effect<boolean[], ApiError, AuthService>;
+		) => Effect.Effect<readonly boolean[], ApiError, AuthService>;
 	}
 >() {}
 
@@ -74,7 +72,10 @@ export const UserServiceLive = Layer.effect(
 	Effect.gen(function* () {
 		return UserService.of({
 			getCurrentUser: () => {
-				return makeRequest({ route: "me", schema: UserSchema });
+				return makeRequest({
+					route: "me",
+					schema: GetCurrentUserResponseSchema,
+				});
 			},
 			getTopItems: (
 				request: GetTopItemsRequest,
@@ -82,19 +83,27 @@ export const UserServiceLive = Layer.effect(
 			) => {
 				const { type } = request;
 
+				if (options?.limit !== undefined) {
+					if (options.limit < 0 || options.limit > 50) {
+						throw new IllegalArgumentException(
+							"Limit must be between 0 and 50",
+						);
+					}
+				}
+
 				return makeRequest({
 					route: `me/top/${type}`,
-					schema:
-						type === "tracks"
-							? PageSchema(TrackSchema)
-							: PageSchema(ArtistSchema),
+					schema: GetTopItemsResponseSchema,
 					options,
 				});
 			},
 			getUser: (request: GetUserProfileRequest) => {
 				const { id } = request;
 
-				return makeRequest({ route: `users/${id.trim()}`, schema: UserSchema });
+				return makeRequest({
+					route: `users/${id.trim()}`,
+					schema: GetUserProfileResponseSchema,
+				});
 			},
 			followPlaylist: (request: UserFollowPlaylistRequest) => {
 				const { id, isPublic } = request;
@@ -123,9 +132,17 @@ export const UserServiceLive = Layer.effect(
 			) => {
 				const { type } = request;
 
+				if (options?.limit !== undefined) {
+					if (options.limit < 0 || options.limit > 50) {
+						throw new IllegalArgumentException(
+							"Limit must be between 0 and 50",
+						);
+					}
+				}
+
 				return makeRequest({
 					route: `me/following?type=${type}`,
-					schema: FollowedArtistSchema,
+					schema: GetFollowedArtistResponseSchema,
 					options,
 				});
 			},

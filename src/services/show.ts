@@ -7,26 +7,20 @@ import type {
 	PaginationOptions,
 } from "@internal/options";
 import {
-	PageSchema,
-	SavedShowSchema,
-	ShowSchema,
-	SimplifiedEpisodeSchema,
-	SimplifiedShowSchema,
-} from "@internal/schemas";
-import type {
-	Page,
-	SavedShow,
-	Show,
-	SimplifiedEpisode,
-	SimplifiedShow,
-} from "@internal/index";
-import type {
-	CheckSavedShowRequest,
-	GetSeveralShowRequest,
-	GetShowEpisodeRequest,
-	GetShowRequest,
-	RemoveShowRequest,
-	SaveShowRequest,
+	GetSavedShowResponseSchema,
+	GetSeveralShowResponseSchema,
+	GetShowEpisodeResponseSchema,
+	GetShowResponseSchema,
+	type CheckSavedShowRequest,
+	type GetSavedShowResponse,
+	type GetSeveralShowRequest,
+	type GetSeveralShowResponse,
+	type GetShowEpisodeRequest,
+	type GetShowEpisodeResponse,
+	type GetShowRequest,
+	type GetShowResponse,
+	type RemoveShowRequest,
+	type SaveShowRequest,
 } from "@internal/services/show";
 import type { ApiError } from "@errors/index";
 import type { AuthService } from "auth";
@@ -37,18 +31,18 @@ export class ShowService extends Context.Tag("ShowService")<
 		readonly get: (
 			request: GetShowRequest,
 			options?: MarketOnlyOptions,
-		) => Effect.Effect<Show, ApiError, AuthService>;
+		) => Effect.Effect<GetShowResponse, ApiError, AuthService>;
 		readonly getMany: (
 			request: GetSeveralShowRequest,
 			options?: MarketOnlyOptions,
-		) => Effect.Effect<SimplifiedShow[], ApiError, AuthService>;
+		) => Effect.Effect<GetSeveralShowResponse, ApiError, AuthService>;
 		readonly getEpisodes: (
 			request: GetShowEpisodeRequest,
 			options?: PaginatedMarketOptions,
-		) => Effect.Effect<Page<SimplifiedEpisode>, ApiError, AuthService>;
+		) => Effect.Effect<GetShowEpisodeResponse, ApiError, AuthService>;
 		readonly getSaved: (
 			options?: PaginationOptions,
-		) => Effect.Effect<Page<SavedShow>, ApiError, AuthService>;
+		) => Effect.Effect<GetSavedShowResponse, ApiError, AuthService>;
 		readonly save: (
 			request: SaveShowRequest,
 		) => Effect.Effect<void, ApiError, AuthService>;
@@ -57,7 +51,7 @@ export class ShowService extends Context.Tag("ShowService")<
 		) => Effect.Effect<void, ApiError, AuthService>;
 		readonly checkSaved: (
 			request: CheckSavedShowRequest,
-		) => Effect.Effect<boolean[], ApiError, AuthService>;
+		) => Effect.Effect<readonly boolean[], ApiError, AuthService>;
 	}
 >() {}
 
@@ -70,7 +64,7 @@ export const ShowServiceLive = Layer.effect(
 
 				return makeRequest({
 					route: `shows/${id.trim()}`,
-					schema: ShowSchema,
+					schema: GetShowResponseSchema,
 					options,
 				});
 			},
@@ -91,7 +85,7 @@ export const ShowServiceLive = Layer.effect(
 
 				return makeRequest({
 					route: `shows?${encodedIds}`,
-					schema: Schema.Array(SimplifiedShowSchema),
+					schema: GetSeveralShowResponseSchema,
 					options,
 				});
 			},
@@ -101,16 +95,32 @@ export const ShowServiceLive = Layer.effect(
 			) => {
 				const { id } = request;
 
+				if (options?.limit !== undefined) {
+					if (options.limit < 0 || options.limit > 50) {
+						throw new IllegalArgumentException(
+							"Limit must be between 0 and 50",
+						);
+					}
+				}
+
 				return makeRequest({
 					route: `shows/${id.trim()}/episodes`,
-					schema: PageSchema(SimplifiedEpisodeSchema),
+					schema: GetShowEpisodeResponseSchema,
 					options,
 				});
 			},
 			getSaved: (options?: PaginationOptions) => {
+				if (options?.limit !== undefined) {
+					if (options.limit < 0 || options.limit > 50) {
+						throw new IllegalArgumentException(
+							"Limit must be between 0 and 50",
+						);
+					}
+				}
+
 				return makeRequest({
 					route: "me/shows",
-					schema: PageSchema(SavedShowSchema),
+					schema: GetSavedShowResponseSchema,
 					options,
 				});
 			},

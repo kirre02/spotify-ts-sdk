@@ -1,12 +1,14 @@
-import { Effect, Context, Schema, Layer } from "effect";
+import { Effect, Context, Layer } from "effect";
 import { makeRequest } from "@core/client";
 import type { MarketOnlyOptions } from "@internal/options";
-import { ChapterSchema } from "@internal/schemas";
-import type { Chapter } from "@internal/index";
 import { IllegalArgumentException } from "effect/Cause";
-import type {
-	GetChapterRequest,
-	GetSeveralChapterRequest,
+import {
+	GetChapterResponseSchema,
+	GetSeveralChapterResponseSchema,
+	type GetChapterRequest,
+	type GetChapterResponse,
+	type GetSeveralChapterRequest,
+	type GetSeveralChapterResponse,
 } from "@internal/services/chapter";
 import type { ApiError } from "@errors/index";
 import type { AuthService } from "auth";
@@ -17,11 +19,11 @@ export class ChapterService extends Context.Tag("ChapterService")<
 		readonly get: (
 			request: GetChapterRequest,
 			options?: MarketOnlyOptions,
-		) => Effect.Effect<Chapter, ApiError, AuthService>;
+		) => Effect.Effect<GetChapterResponse, ApiError, AuthService>;
 		readonly getMany: (
 			request: GetSeveralChapterRequest,
 			options?: MarketOnlyOptions,
-		) => Effect.Effect<Chapter[], ApiError, AuthService>;
+		) => Effect.Effect<GetSeveralChapterResponse, ApiError, AuthService>;
 	}
 >() {}
 
@@ -34,7 +36,7 @@ export const ChapterServiceLive = Layer.effect(
 
 				return makeRequest({
 					route: `chapters/${id.trim()}`,
-					schema: ChapterSchema,
+					schema: GetChapterResponseSchema,
 					options,
 				});
 			},
@@ -55,7 +57,7 @@ export const ChapterServiceLive = Layer.effect(
 
 				return makeRequest({
 					route: `chapters?ids=${encodedIds}`,
-					schema: Schema.Array(ChapterSchema),
+					schema: GetSeveralChapterResponseSchema,
 					options,
 				});
 			},

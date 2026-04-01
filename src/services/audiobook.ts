@@ -5,26 +5,22 @@ import type {
 	PaginatedMarketOptions,
 	PaginationOptions,
 } from "@internal/options";
-import type {
-	Audiobook,
-	Page,
-	SimplifiedAudiobook,
-	SimplifiedChapter,
-} from "@internal/index";
-import {
-	AudiobookSchema,
-	PageSchema,
-	SimplifiedAudiobookSchema,
-	SimplifiedChapterSchema,
-} from "@internal/schemas";
 import { IllegalArgumentException } from "effect/Cause";
-import type {
-	CheckSavedAudiobookRequest,
-	GetAudiobookChapterRequest,
-	GetAudiobookRequest,
-	GetSeveralAudiobookRequest,
-	RemoveAudiobookRequest,
-	SaveAudiobookRequest,
+import {
+	GetAudiobookChapterResponseSchema,
+	GetAudiobookResponseSchema,
+	GetSavedAudiobookResponseSchema,
+	GetSeveralAudiobookResponseSchema,
+	type CheckSavedAudiobookRequest,
+	type GetAudiobookChapterRequest,
+	type GetAudiobookChapterResponse,
+	type GetAudiobookRequest,
+	type GetAudiobookResponse,
+	type GetSavedAudiobookResponse,
+	type GetSeveralAudiobookRequest,
+	type GetSeveralAudiobookResponse,
+	type RemoveAudiobookRequest,
+	type SaveAudiobookRequest,
 } from "@internal/services/audiobook";
 import type { ApiError } from "@errors/index";
 import type { AuthService } from "auth";
@@ -35,18 +31,18 @@ export class AudiobookService extends Context.Tag("AudiobookService")<
 		readonly get: (
 			request: GetAudiobookRequest,
 			options?: MarketOnlyOptions,
-		) => Effect.Effect<Audiobook, ApiError, AuthService>;
+		) => Effect.Effect<GetAudiobookResponse, ApiError, AuthService>;
 		readonly getMany: (
 			request: GetSeveralAudiobookRequest,
 			options?: MarketOnlyOptions,
-		) => Effect.Effect<Audiobook[], ApiError, AuthService>;
+		) => Effect.Effect<GetSeveralAudiobookResponse, ApiError, AuthService>;
 		readonly getChapters: (
 			request: GetAudiobookChapterRequest,
 			options?: PaginatedMarketOptions,
-		) => Effect.Effect<Page<SimplifiedChapter>, ApiError, AuthService>;
+		) => Effect.Effect<GetAudiobookChapterResponse, ApiError, AuthService>;
 		readonly getSaved: (
 			options?: PaginationOptions,
-		) => Effect.Effect<Page<SimplifiedAudiobook>, ApiError, AuthService>;
+		) => Effect.Effect<GetSavedAudiobookResponse, ApiError, AuthService>;
 		readonly save: (
 			request: SaveAudiobookRequest,
 		) => Effect.Effect<void, ApiError, AuthService>;
@@ -55,7 +51,7 @@ export class AudiobookService extends Context.Tag("AudiobookService")<
 		) => Effect.Effect<void, ApiError, AuthService>;
 		readonly checkSaved: (
 			request: CheckSavedAudiobookRequest,
-		) => Effect.Effect<boolean[], ApiError, AuthService>;
+		) => Effect.Effect<readonly boolean[], ApiError, AuthService>;
 	}
 >() {}
 
@@ -68,7 +64,7 @@ export const AudiobookServiceLive = Layer.effect(
 
 				return makeRequest({
 					route: `audiobooks/${id.trim()}`,
-					schema: AudiobookSchema,
+					schema: GetAudiobookResponseSchema,
 					options,
 				});
 			},
@@ -89,7 +85,7 @@ export const AudiobookServiceLive = Layer.effect(
 
 				return makeRequest({
 					route: `audiobooks?ids=${encodedIds}`,
-					schema: Schema.Array(AudiobookSchema),
+					schema: GetSeveralAudiobookResponseSchema,
 					options,
 				});
 			},
@@ -99,16 +95,32 @@ export const AudiobookServiceLive = Layer.effect(
 			) => {
 				const { id } = request;
 
+				if (options?.limit !== undefined) {
+					if (options.limit < 0 || options.limit > 50) {
+						throw new IllegalArgumentException(
+							"Limit must be between 0 and 50",
+						);
+					}
+				}
+
 				return makeRequest({
 					route: `audiobooks/${id.trim()}/chapters`,
-					schema: PageSchema(SimplifiedChapterSchema),
+					schema: GetAudiobookChapterResponseSchema,
 					options,
 				});
 			},
 			getSaved: (options?: PaginationOptions) => {
+				if (options?.limit !== undefined) {
+					if (options.limit < 0 || options.limit > 50) {
+						throw new IllegalArgumentException(
+							"Limit must be between 0 and 50",
+						);
+					}
+				}
+
 				return makeRequest({
 					route: "me/audiobooks",
-					schema: PageSchema(SimplifiedAudiobookSchema),
+					schema: GetSavedAudiobookResponseSchema,
 					options,
 				});
 			},

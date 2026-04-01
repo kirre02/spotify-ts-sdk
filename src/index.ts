@@ -66,8 +66,11 @@ import type {
 	GetSeveralChapterRequest,
 } from "@internal/services/chapter";
 import type {
+	CheckSavedEpisodeRequest,
 	GetEpisodeRequest,
 	GetSeveralEpisodeRequest,
+	RemoveEpisodeRequest,
+	SaveEpisodeRequest,
 } from "@internal/services/episode";
 import type {
 	AddToPlaybackQueueRequest,
@@ -102,7 +105,7 @@ import type {
 } from "@internal/services/show";
 import type { SearchRequest } from "@internal/services/search";
 import type {
-	AddItemToPlaylistRequest,
+	AddPlaylistItemRequest,
 	AddPlaylistCoverImageRequest,
 	ChangeDetailsRequest,
 	CreatePlaylistRequest,
@@ -110,7 +113,7 @@ import type {
 	GetPlaylistItemRequest,
 	GetPlaylistRequest,
 	GetUserPlaylistRequest,
-	RemoveItemsFromPlaylistRequest,
+	RemovePlaylistItemRequest,
 	UpdatePlaylistItemRequest,
 } from "@internal/services/playlist";
 
@@ -389,6 +392,34 @@ class BetterMusicClient {
 						return yield* s.getMany(request, options);
 					}),
 				),
+			getSaved: (options?: PaginatedMarketOptions) =>
+				this.run(
+					Effect.gen(function* () {
+						const s = yield* EpisodeService;
+						return yield* s.getSaved(options);
+					}),
+				),
+			save: (request: SaveEpisodeRequest) =>
+				this.run(
+					Effect.gen(function* () {
+						const s = yield* EpisodeService;
+						return yield* s.save(request);
+					}),
+				),
+			remove: (request: RemoveEpisodeRequest) =>
+				this.run(
+					Effect.gen(function* () {
+						const s = yield* EpisodeService;
+						return yield* s.remove(request);
+					}),
+				),
+			checkSaved: (request: CheckSavedEpisodeRequest) =>
+				this.run(
+					Effect.gen(function* () {
+						const s = yield* EpisodeService;
+						return yield* s.checkSaved(request);
+					}),
+				),
 		};
 	}
 	get market() {
@@ -544,14 +575,14 @@ class BetterMusicClient {
 						return yield* s.updateItems(request);
 					}),
 				),
-			add: (request: AddItemToPlaylistRequest) =>
+			add: (request: AddPlaylistItemRequest) =>
 				this.run(
 					Effect.gen(function* () {
 						const s = yield* PlaylistService;
 						return yield* s.add(request);
 					}),
 				),
-			remove: (request: RemoveItemsFromPlaylistRequest) =>
+			remove: (request: RemovePlaylistItemRequest) =>
 				this.run(
 					Effect.gen(function* () {
 						const s = yield* PlaylistService;
@@ -665,7 +696,6 @@ class BetterMusicClient {
 				),
 		};
 	}
-
 	get track() {
 		return {
 			get: (request: GetTrackRequest, options?: MarketOnlyOptions) =>

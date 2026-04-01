@@ -12,11 +12,8 @@ import {
 	UnknownApiError,
 } from "@errors/index";
 import type { AllOptions } from "@internal/options";
-import { ErrorSchema } from "@internal/schemas";
+import { ErrorSchema } from "@internal/shared";
 import { AuthService } from "auth";
-
-// Use generic sceham for the schema param
-// then get the types from infering
 
 export function makeRequest<T, I, R>({
 	method = "GET",

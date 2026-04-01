@@ -1,11 +1,14 @@
 import { Context, Effect, Layer } from "effect";
 import { makeRequest } from "@core/client";
 import type { MarketExternalOptions } from "@internal/options";
-import { SearchResultsMapSchema } from "@internal/schemas";
-import type { SearchResults } from "@internal/index";
-import type { SearchRequest } from "@internal/services/search";
+import {
+	type SearchRequest,
+	type SearchResponse,
+	SearchResponseSchema,
+} from "@internal/services/search";
 import type { ApiError } from "@errors/index";
 import type { AuthService } from "auth";
+import { IllegalArgumentException } from "effect/Cause";
 
 export class SearchService extends Context.Tag("SearchService")<
 	SearchService,
@@ -13,7 +16,7 @@ export class SearchService extends Context.Tag("SearchService")<
 		readonly search: (
 			request: SearchRequest,
 			options?: MarketExternalOptions,
-		) => Effect.Effect<SearchResults, ApiError, AuthService>;
+		) => Effect.Effect<SearchResponse, ApiError, AuthService>;
 	}
 >() {}
 
@@ -24,13 +27,23 @@ export const SearchServiceLive = Layer.effect(
 			search: (request: SearchRequest, options?: MarketExternalOptions) => {
 				const { query, types } = request;
 
+				if (options?.limit !== undefined) {
+					if (options.limit < 0 || options.limit > 50) {
+						throw new IllegalArgumentException(
+							"Limit must be between 0 and 50",
+						);
+					}
+				}
+
+				const encodedQuery = query.replaceAll(" ", encodeURIComponent(" "));
+
 				const encodedTypes = types
 					.map((type) => type.trim())
 					.join(encodeURIComponent(","));
 
 				return makeRequest({
-					route: `search?q=${query.trim()}&type=${encodedTypes}`,
-					schema: SearchResultsMapSchema,
+					route: `search?q=${encodeURI(encodedQuery.trim())}&type=${encodedTypes}`,
+					schema: SearchResponseSchema,
 					options,
 				});
 			},

@@ -6,7 +6,11 @@ import type { AuthService } from "auth";
 export class MarketService extends Context.Tag("MarketService")<
 	MarketService,
 	{
-		readonly getAll: () => Effect.Effect<string[], ApiError, AuthService>;
+		readonly getAll: () => Effect.Effect<
+			readonly string[],
+			ApiError,
+			AuthService
+		>;
 	}
 >() {}
 

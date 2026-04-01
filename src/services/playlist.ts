@@ -7,30 +7,34 @@ import type {
 	PaginationOptions,
 } from "@internal/options";
 import {
-	SimplifiedPlaylistSchema,
-	PageSchema,
-	PlaylistSchema,
-	PlaylistTrackSchema,
-	ImageSchema,
-} from "@internal/schemas";
-import type {
-	SimplifiedPlaylist,
-	Page,
-	Playlist,
-	PlaylistTrack,
-	Image,
-} from "@internal/index";
-import type {
-	AddItemToPlaylistRequest,
-	AddPlaylistCoverImageRequest,
-	ChangeDetailsRequest,
-	CreatePlaylistRequest,
-	GetPlaylistCoverImageRequest,
-	GetPlaylistItemRequest,
-	GetPlaylistRequest,
-	GetUserPlaylistRequest,
-	RemoveItemsFromPlaylistRequest,
-	UpdatePlaylistItemRequest,
+	GetPlaylistItemResponseSchema,
+	GetPlaylistResponseSchema,
+	UpdatePlaylistItemResponseSchema,
+	type AddPlaylistItemRequest,
+	type AddPlaylistCoverImageRequest,
+	type ChangeDetailsRequest,
+	type CreatePlaylistRequest,
+	type GetPlaylistCoverImageRequest,
+	type GetPlaylistItemRequest,
+	type GetPlaylistItemResponse,
+	type GetPlaylistRequest,
+	type GetPlaylistResponse,
+	type GetUserPlaylistRequest,
+	type RemovePlaylistItemRequest,
+	type UpdatePlaylistItemRequest,
+	type UpdatePlaylistItemResponse,
+	type AddPlaylistItemResponse,
+	type RemovePlaylistItemResponse,
+	AddPlaylistItemResponseSchema,
+	RemovePlaylistItemResponseSchema,
+	type GetCurrentUserPlaylistResponse,
+	GetCurrentUserPlaylistResponseSchema,
+	CreatePlaylistResponseSchema,
+	type CreatePlaylistResponse,
+	GetUserPlaylistResponseSchema,
+	type GetUserPlaylistResponse,
+	GetPlaylistCoverImageResponseSchema,
+	type GetPlaylistCoverImageResponse,
 } from "@internal/services/playlist";
 import type { ApiError } from "@errors/index";
 import type { AuthService } from "auth";
@@ -41,36 +45,36 @@ export class PlaylistService extends Context.Tag("PlaylistService")<
 		readonly get: (
 			request: GetPlaylistRequest,
 			options?: MarketFieldOptions,
-		) => Effect.Effect<Playlist, ApiError, AuthService>;
+		) => Effect.Effect<GetPlaylistResponse, ApiError, AuthService>;
 		readonly changeDetails: (
 			request: ChangeDetailsRequest,
 		) => Effect.Effect<void, ApiError, AuthService>;
 		readonly getItems: (
 			request: GetPlaylistItemRequest,
 			options?: DetailedMarketPaginationOptions,
-		) => Effect.Effect<Page<PlaylistTrack>, ApiError, AuthService>;
+		) => Effect.Effect<GetPlaylistItemResponse, ApiError, AuthService>;
 		readonly updateItems: (
 			request: UpdatePlaylistItemRequest,
-		) => Effect.Effect<string, ApiError, AuthService>;
+		) => Effect.Effect<UpdatePlaylistItemResponse, ApiError, AuthService>;
 		readonly add: (
-			request: AddItemToPlaylistRequest,
-		) => Effect.Effect<string, ApiError, AuthService>;
+			request: AddPlaylistItemRequest,
+		) => Effect.Effect<AddPlaylistItemResponse, ApiError, AuthService>;
 		readonly remove: (
-			request: RemoveItemsFromPlaylistRequest,
-		) => Effect.Effect<string, ApiError, AuthService>;
+			request: RemovePlaylistItemRequest,
+		) => Effect.Effect<RemovePlaylistItemResponse, ApiError, AuthService>;
 		readonly getPlaylists: (
 			options?: PaginationOptions,
-		) => Effect.Effect<Page<SimplifiedPlaylist>, ApiError, AuthService>;
+		) => Effect.Effect<GetCurrentUserPlaylistResponse, ApiError, AuthService>;
 		readonly getUsersPlaylists: (
 			request: GetUserPlaylistRequest,
 			options?: PaginationOptions,
-		) => Effect.Effect<Page<SimplifiedPlaylist>, ApiError, AuthService>;
+		) => Effect.Effect<GetUserPlaylistResponse, ApiError, AuthService>;
 		readonly create: (
 			request: CreatePlaylistRequest,
-		) => Effect.Effect<Playlist, ApiError, AuthService>;
+		) => Effect.Effect<CreatePlaylistResponse, ApiError, AuthService>;
 		readonly getCoverImage: (
 			request: GetPlaylistCoverImageRequest,
-		) => Effect.Effect<Image[], ApiError, AuthService>;
+		) => Effect.Effect<GetPlaylistCoverImageResponse, ApiError, AuthService>;
 		readonly addCustomCoverImage: (
 			request: AddPlaylistCoverImageRequest,
 		) => Effect.Effect<void, ApiError, AuthService>;
@@ -86,7 +90,7 @@ export const PlaylistServiceLive = Layer.effect(
 
 				return makeRequest({
 					route: `playlists/${id.trim()}`,
-					schema: PlaylistSchema,
+					schema: GetPlaylistResponseSchema,
 					options,
 				});
 			},
@@ -112,9 +116,17 @@ export const PlaylistServiceLive = Layer.effect(
 			) => {
 				const { id } = request;
 
+				if (options?.limit !== undefined) {
+					if (options.limit < 0 || options.limit > 50) {
+						throw new IllegalArgumentException(
+							"Limit must be between 0 and 50",
+						);
+					}
+				}
+
 				return makeRequest({
 					route: `playlists/${id.trim()}/tracks`,
-					schema: PageSchema(PlaylistTrackSchema),
+					schema: GetPlaylistItemResponseSchema,
 					options,
 				});
 			},
@@ -131,7 +143,7 @@ export const PlaylistServiceLive = Layer.effect(
 				return makeRequest({
 					method: "PUT",
 					route: `playlists/${playlistId.trim()}/tracks`,
-					schema: Schema.String,
+					schema: UpdatePlaylistItemResponseSchema,
 					body: JSON.stringify({
 						uris,
 						range_start: rangeStart,
@@ -141,20 +153,20 @@ export const PlaylistServiceLive = Layer.effect(
 					}),
 				});
 			},
-			add: (request: AddItemToPlaylistRequest) => {
+			add: (request: AddPlaylistItemRequest) => {
 				const { playlistId, position, uris } = request;
 
 				return makeRequest({
 					method: "POST",
 					route: `playlists/${playlistId}/tracks`,
-					schema: Schema.String,
+					schema: AddPlaylistItemResponseSchema,
 					body: JSON.stringify({
 						position,
 						uris,
 					}),
 				});
 			},
-			remove: (request: RemoveItemsFromPlaylistRequest) => {
+			remove: (request: RemovePlaylistItemRequest) => {
 				const { playlistId, tracks, snapshotId } = request;
 
 				if (tracks?.length > 100) {
@@ -166,7 +178,7 @@ export const PlaylistServiceLive = Layer.effect(
 				return makeRequest({
 					method: "DELETE",
 					route: `playlists/${playlistId.trim()}/tracks`,
-					schema: Schema.String,
+					schema: RemovePlaylistItemResponseSchema,
 					body: JSON.stringify({
 						tracks,
 						snapshot_id: snapshotId,
@@ -174,9 +186,17 @@ export const PlaylistServiceLive = Layer.effect(
 				});
 			},
 			getPlaylists: (options?: PaginationOptions) => {
+				if (options?.limit !== undefined) {
+					if (options.limit < 0 || options.limit > 50) {
+						throw new IllegalArgumentException(
+							"Limit must be between 0 and 50",
+						);
+					}
+				}
+
 				return makeRequest({
 					route: "me/playlists",
-					schema: PageSchema(SimplifiedPlaylistSchema),
+					schema: GetCurrentUserPlaylistResponseSchema,
 					options,
 				});
 			},
@@ -186,9 +206,17 @@ export const PlaylistServiceLive = Layer.effect(
 			) => {
 				const { id } = request;
 
+				if (options?.limit !== undefined) {
+					if (options.limit < 0 || options.limit > 50) {
+						throw new IllegalArgumentException(
+							"Limit must be between 0 and 50",
+						);
+					}
+				}
+
 				return makeRequest({
 					route: `users/${id.trim()}/playlists`,
-					schema: PageSchema(SimplifiedPlaylistSchema),
+					schema: GetUserPlaylistResponseSchema,
 					options,
 				});
 			},
@@ -198,7 +226,7 @@ export const PlaylistServiceLive = Layer.effect(
 				return makeRequest({
 					method: "POST",
 					route: `users/${userId}/playlists`,
-					schema: PlaylistSchema,
+					schema: CreatePlaylistResponseSchema,
 					body: JSON.stringify({
 						name,
 						public: isPublic,
@@ -212,7 +240,7 @@ export const PlaylistServiceLive = Layer.effect(
 
 				return makeRequest({
 					route: `playlists/${id.trim()}/images`,
-					schema: Schema.Array(ImageSchema),
+					schema: GetPlaylistCoverImageResponseSchema,
 				});
 			},
 			addCustomCoverImage: (request: AddPlaylistCoverImageRequest) => {

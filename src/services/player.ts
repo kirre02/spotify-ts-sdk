@@ -5,47 +5,48 @@ import type {
 	MarketAdditionalTypesOptions,
 } from "@internal/options";
 import {
-	DeviceSchema,
-	PageSchema,
-	PlaybackStateSchema,
-	PlayHistorySchema,
-	QueueSchema,
-} from "@internal/schemas";
-import type {
-	Device,
-	Page,
-	PlaybackState,
-	PlayHistory,
-	Queue,
-} from "@internal/index";
-import type {
-	AddToPlaybackQueueRequest,
-	PausePlaybackRequest,
-	SeekToPositionRequest,
-	SetPlaybackVolumeRequest,
-	SetRepeatModeRequest,
-	SkipToNextRequest,
-	SkipToPreviousRequest,
-	StartOrResumePlaybackRequest,
-	TogglePlaybackShuffleRequest,
-	TransferPlaybackRequest,
+	GetAvailableDevicesResponseSchema,
+	GetCurrentlyPlayingResponseSchema,
+	GetPlaybackStateResponseSchema,
+	GetQueueResponseSchema,
+	GetRecentlyPlayedResponseSchema,
+	type AddToPlaybackQueueRequest,
+	type GetAvailableDevicesResponse,
+	type GetCurrentlyPlayingResponse,
+	type GetPlaybackStateResponse,
+	type GetQueueResponse,
+	type GetRecentlyPlayedResponse,
+	type PausePlaybackRequest,
+	type SeekToPositionRequest,
+	type SetPlaybackVolumeRequest,
+	type SetRepeatModeRequest,
+	type SkipToNextRequest,
+	type SkipToPreviousRequest,
+	type StartOrResumePlaybackRequest,
+	type TogglePlaybackShuffleRequest,
+	type TransferPlaybackRequest,
 } from "@internal/services/player";
 import type { ApiError } from "@errors/index";
 import type { AuthService } from "auth";
+import { IllegalArgumentException } from "effect/Cause";
 
 export class PlayerService extends Context.Tag("PlayerService")<
 	PlayerService,
 	{
 		readonly getPlaybackState: (
 			options?: MarketAdditionalTypesOptions,
-		) => Effect.Effect<PlaybackState, ApiError, AuthService>;
+		) => Effect.Effect<GetPlaybackStateResponse, ApiError, AuthService>;
 		readonly transferPlayback: (
 			request: TransferPlaybackRequest,
 		) => Effect.Effect<void, ApiError, AuthService>;
-		readonly getDevices: () => Effect.Effect<Device[], ApiError, AuthService>;
+		readonly getDevices: () => Effect.Effect<
+			GetAvailableDevicesResponse,
+			ApiError,
+			AuthService
+		>;
 		readonly getCurrentlyPlaying: (
 			options?: MarketAdditionalTypesOptions,
-		) => Effect.Effect<PlaybackState, ApiError, AuthService>;
+		) => Effect.Effect<GetCurrentlyPlayingResponse, ApiError, AuthService>;
 		readonly startOrResumePlayback: (
 			request: StartOrResumePlaybackRequest,
 		) => Effect.Effect<void, ApiError, AuthService>;
@@ -72,8 +73,12 @@ export class PlayerService extends Context.Tag("PlayerService")<
 		) => Effect.Effect<void, ApiError, AuthService>;
 		readonly getRecentlyPlayed: (
 			options?: DateRangeOptions,
-		) => Effect.Effect<Page<PlayHistory>, ApiError, AuthService>;
-		readonly getQueue: () => Effect.Effect<Queue, ApiError, AuthService>;
+		) => Effect.Effect<GetRecentlyPlayedResponse, ApiError, AuthService>;
+		readonly getQueue: () => Effect.Effect<
+			GetQueueResponse,
+			ApiError,
+			AuthService
+		>;
 		readonly addToPlaybackQueue: (
 			request: AddToPlaybackQueueRequest,
 		) => Effect.Effect<void, ApiError, AuthService>;
@@ -87,7 +92,7 @@ export const PlayerServiceLive = Layer.effect(
 			getPlaybackState: (options?: MarketAdditionalTypesOptions) => {
 				return makeRequest({
 					route: "me/player",
-					schema: PlaybackStateSchema,
+					schema: GetPlaybackStateResponseSchema,
 					options,
 				});
 			},
@@ -107,13 +112,13 @@ export const PlayerServiceLive = Layer.effect(
 			getDevices: () => {
 				return makeRequest({
 					route: "me/player/devices",
-					schema: Schema.Array(DeviceSchema),
+					schema: GetAvailableDevicesResponseSchema,
 				});
 			},
 			getCurrentlyPlaying: (options?: MarketAdditionalTypesOptions) => {
 				return makeRequest({
 					route: "me/player/currently-playing",
-					schema: PlaybackStateSchema,
+					schema: GetCurrentlyPlayingResponseSchema,
 					options,
 				});
 			},
@@ -192,6 +197,12 @@ export const PlayerServiceLive = Layer.effect(
 			setPlaybackVolume: (request: SetPlaybackVolumeRequest) => {
 				const { volumePercent, deviceId } = request;
 
+				if (volumePercent < 0 || volumePercent > 100) {
+					throw new IllegalArgumentException(
+						"Volume percent must be between 0 and 100",
+					);
+				}
+
 				return makeRequest({
 					method: "PUT",
 					route: deviceId
@@ -212,14 +223,24 @@ export const PlayerServiceLive = Layer.effect(
 				});
 			},
 			getRecentlyPlayed: (options?: DateRangeOptions) => {
+				if (options?.limit !== undefined) {
+					if (options.limit < 0 || options.limit > 50) {
+						throw new IllegalArgumentException(
+							"Limit must be between 0 and 50",
+						);
+					}
+				}
 				return makeRequest({
 					route: "me/player/recently-played",
-					schema: PageSchema(PlayHistorySchema),
+					schema: GetRecentlyPlayedResponseSchema,
 					options,
 				});
 			},
 			getQueue: () => {
-				return makeRequest({ route: "me/player/queue", schema: QueueSchema });
+				return makeRequest({
+					route: "me/player/queue",
+					schema: GetQueueResponseSchema,
+				});
 			},
 			addToPlaybackQueue: (request: AddToPlaybackQueueRequest) => {
 				const { uri, deviceId } = request;

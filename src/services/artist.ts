@@ -1,22 +1,23 @@
-import {
-	ArtistSchema,
-	PageSchema,
-	SimplifiedAlbumSchema,
-	TrackSchema,
-} from "@internal/schemas";
-import type { Artist, Page, SimplifiedAlbum, Track } from "@internal/index";
 import { makeRequest } from "@core/client";
 import type {
 	AlbumRetrievalOptions,
 	MarketOnlyOptions,
 } from "@internal/options";
-import { Context, Effect, Layer, Schema } from "effect";
+import { Context, Effect, Layer } from "effect";
 import { IllegalArgumentException } from "effect/Cause";
-import type {
-	GetArtistAlbumRequest,
-	GetArtistRequest,
-	GetArtistTopTracksRequest,
-	GetSeveralArtistRequest,
+import {
+	GetArtistAlbumResponseSchema,
+	GetArtistResponseSchema,
+	GetArtistTopTracksResponseSchema,
+	GetSeveralArtistResponseSchema,
+	type GetArtistAlbumRequest,
+	type GetArtistAlbumResponse,
+	type GetArtistRequest,
+	type GetArtistResponse,
+	type GetArtistTopTracksRequest,
+	type GetArtistTopTracksResponse,
+	type GetSeveralArtistRequest,
+	type GetSeveralArtistResponse,
 } from "@internal/services/artist";
 import type { ApiError } from "@errors/index";
 import type { AuthService } from "auth";
@@ -26,18 +27,18 @@ export class ArtistService extends Context.Tag("ArtistService")<
 	{
 		readonly get: (
 			request: GetArtistRequest,
-		) => Effect.Effect<Artist, ApiError, AuthService>;
+		) => Effect.Effect<GetArtistResponse, ApiError, AuthService>;
 		readonly getMany: (
 			request: GetSeveralArtistRequest,
-		) => Effect.Effect<Artist[], ApiError, AuthService>;
+		) => Effect.Effect<GetSeveralArtistResponse, ApiError, AuthService>;
 		readonly getAlbums: (
 			request: GetArtistAlbumRequest,
 			options?: AlbumRetrievalOptions,
-		) => Effect.Effect<Page<SimplifiedAlbum>, ApiError, AuthService>;
+		) => Effect.Effect<GetArtistAlbumResponse, ApiError, AuthService>;
 		readonly getTopTracks: (
 			request: GetArtistTopTracksRequest,
 			options?: MarketOnlyOptions,
-		) => Effect.Effect<Track[], ApiError, AuthService>;
+		) => Effect.Effect<GetArtistTopTracksResponse, ApiError, AuthService>;
 	}
 >() {}
 
@@ -50,7 +51,7 @@ export const ArtistServiceLive = Layer.effect(
 
 				return makeRequest({
 					route: `artists/${id.trim()}`,
-					schema: ArtistSchema,
+					schema: GetArtistResponseSchema,
 				});
 			},
 			getMany: (request: GetSeveralArtistRequest) => {
@@ -67,7 +68,7 @@ export const ArtistServiceLive = Layer.effect(
 
 				return makeRequest({
 					route: `artists?ids=${encodedIds}`,
-					schema: Schema.Array(ArtistSchema),
+					schema: GetSeveralArtistResponseSchema,
 				});
 			},
 			getAlbums: (
@@ -76,9 +77,17 @@ export const ArtistServiceLive = Layer.effect(
 			) => {
 				const { id } = request;
 
+				if (options?.limit !== undefined) {
+					if (options.limit < 0 || options.limit > 50) {
+						throw new IllegalArgumentException(
+							"Limit must be between 0 and 50",
+						);
+					}
+				}
+
 				return makeRequest({
 					route: `artists/${id.trim()}/albums`,
-					schema: PageSchema(SimplifiedAlbumSchema),
+					schema: GetArtistAlbumResponseSchema,
 					options,
 				});
 			},
@@ -90,7 +99,7 @@ export const ArtistServiceLive = Layer.effect(
 
 				return makeRequest({
 					route: `artists/${id.trim()}/top-tracks`,
-					schema: Schema.Array(TrackSchema),
+					schema: GetArtistTopTracksResponseSchema,
 					options,
 				});
 			},
