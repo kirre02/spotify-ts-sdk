@@ -1,21 +1,26 @@
 import {
-	Cache,
 	Config,
-	Duration,
+	ConfigProvider,
 	Effect,
 	Layer,
+	Option,
 	Redacted,
 	Schema,
 } from "effect";
 import { JsonParseError, NetworkError, UnknownApiError } from "../errors";
-import { AuthService } from "./index";
-import { PlatformConfigProvider } from "@effect/platform";
-import { NodeFileSystem } from "@effect/platform-node";
+import {
+	AuthService,
+	BaseTokenSchema,
+	layerFromStorage,
+	TOKEN_KEY,
+	type StorageAdapter,
+} from "./index";
+import { KeyValueStore } from "@effect/platform/KeyValueStore";
 
-const TokenResponse = Schema.Struct({
+const StoredTokenSchema = Schema.Struct({
 	access_token: Schema.String,
 	token_type: Schema.String,
-	expires_in: Schema.Number,
+	expires_at: Schema.Number,
 });
 
 function fetchToken(clientId: string, clientSecret: string) {
@@ -26,7 +31,7 @@ function fetchToken(clientId: string, clientSecret: string) {
 					method: "POST",
 					headers: {
 						"Content-Type": "application/x-www-form-urlencoded",
-						Authorization: `Basic ${btoa(`${clientId}:${clientSecret}`)}`,
+						Authorization: `Basic ${Buffer.from(`${clientId}:${clientSecret}`).toString("base64")}`,
 					},
 					body: "grant_type=client_credentials",
 				}),
@@ -53,38 +58,41 @@ function fetchToken(clientId: string, clientSecret: string) {
 				}),
 		});
 
-		return yield* Schema.decodeUnknown(TokenResponse)(json);
+		return yield* Schema.decodeUnknown(BaseTokenSchema)(json);
 	});
 }
 
-export function makeClientCredentialsAuth() {
+export function makeClientCredentialsAuth(adapter: StorageAdapter) {
 	return Layer.effect(
 		AuthService,
 		Effect.gen(function* () {
 			const clientId = yield* Config.redacted("SPOTIFY_CLIENT_ID");
 			const clientSecret = yield* Config.redacted("SPOTIFY_CLIENT_SECRET");
-			const tokenCache = yield* Cache.make({
-				capacity: 1,
-				timeToLive: Duration.minutes(55),
-				lookup: () =>
-					fetchToken(Redacted.value(clientId), Redacted.value(clientSecret)),
-			});
+			const kv = (yield* KeyValueStore).forSchema(StoredTokenSchema);
 
 			return AuthService.of({
 				getToken: Effect.gen(function* () {
-					const tokenResponse = yield* tokenCache.get("token");
-					return tokenResponse.access_token;
+					const maybeToken = Option.getOrNull(yield* kv.get(TOKEN_KEY));
+					if (!maybeToken || maybeToken.expires_at < Date.now()) {
+						const token = yield* fetchToken(
+							Redacted.value(clientId),
+							Redacted.value(clientSecret),
+						);
+
+						yield* kv.set(TOKEN_KEY, {
+							access_token: token.access_token,
+							token_type: token.token_type,
+							expires_at: Date.now() + token.expires_in * 1000,
+						});
+
+						return token.access_token;
+					}
+					return maybeToken.access_token;
 				}).pipe(Effect.orDie),
 			});
 		}),
 	).pipe(
-		Layer.provide(
-			Layer.unwrapEffect(
-				PlatformConfigProvider.fromDotEnv(".env").pipe(
-					Effect.provide(NodeFileSystem.layer),
-					Effect.map(Layer.setConfigProvider),
-				),
-			),
-		),
+		Layer.provide(layerFromStorage(adapter)),
+		Layer.provide(Layer.setConfigProvider(ConfigProvider.fromEnv())),
 	);
 }

@@ -14,7 +14,7 @@ import { TrackService, TrackServiceLive } from "@services/track";
 import { UserService, UserServiceLive } from "@services/user";
 import { Cause, Effect, Exit, Layer, ManagedRuntime } from "effect";
 import type { ConfigError } from "effect/ConfigError";
-import type { AuthService } from "auth";
+import type { AuthService, StorageAdapter } from "auth";
 import type { PlatformError } from "@effect/platform/Error";
 import type {
 	CheckSavedTrackRequest,
@@ -825,7 +825,7 @@ class BetterMusicClient {
 }
 
 export const BetterMusic = {
-	get withClientCredentials() {
-		return new BetterMusicClient(makeClientCredentialsAuth());
+	withClientCredentials(adapter: StorageAdapter) {
+		return new BetterMusicClient(makeClientCredentialsAuth(adapter));
 	},
 };
