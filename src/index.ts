@@ -5,6 +5,7 @@ import { CategoryService, CategoryServiceLive } from "@services/category";
 import { ChapterService, ChapterServiceLive } from "@services/chapter";
 import { EpisodeService, EpisodeServiceLive } from "@services/episode";
 import { makeClientCredentialsAuth } from "auth/withClientCredentials";
+import { makePKCEAuth } from "auth/withPKCE";
 import { MarketService, MarketServiceLive } from "@services/market";
 import { PlayerService, PlayerServiceLive } from "@services/player";
 import { PlaylistService, PlaylistServiceLive } from "@services/playlist";
@@ -14,7 +15,7 @@ import { TrackService, TrackServiceLive } from "@services/track";
 import { UserService, UserServiceLive } from "@services/user";
 import { Cause, Effect, Exit, Layer, ManagedRuntime } from "effect";
 import type { ConfigError } from "effect/ConfigError";
-import type { AuthService, StorageAdapter } from "auth";
+import { type AuthService, PKCEService, type StorageAdapter } from "auth";
 import type { PlatformError } from "@effect/platform/Error";
 import type {
 	CheckSavedTrackRequest,
@@ -827,5 +828,27 @@ class BetterMusicClient {
 export const BetterMusic = {
 	withClientCredentials(adapter: StorageAdapter) {
 		return new BetterMusicClient(makeClientCredentialsAuth(adapter));
+	},
+	withPKCE(adapter: StorageAdapter, scopes: string[]) {
+		const layer = makePKCEAuth(adapter, scopes);
+		const runtime = ManagedRuntime.make(layer);
+
+		return {
+			login: async () => {
+				const pkce = await runtime.runPromise(
+					Effect.gen(function* () {
+						const pkce = yield* PKCEService;
+						return yield* pkce.login;
+					}),
+				);
+
+				return {
+					url: pkce.url,
+					exchange: (params: { code: string; state: string }) =>
+						runtime.runPromise(pkce.exchange(params)),
+				};
+			},
+			client: new BetterMusicClient(layer),
+		};
 	},
 };

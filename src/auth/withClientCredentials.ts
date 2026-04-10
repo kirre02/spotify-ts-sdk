@@ -7,7 +7,12 @@ import {
 	Redacted,
 	Schema,
 } from "effect";
-import { JsonParseError, NetworkError, UnknownApiError } from "../errors";
+import {
+	JsonParseError,
+	NetworkError,
+	SchemaDecodeError,
+	UnknownApiError,
+} from "../errors";
 import {
 	AuthService,
 	BaseTokenSchema,
@@ -44,9 +49,11 @@ function fetchToken(clientId: string, clientSecret: string) {
 		});
 
 		if (!response.ok) {
-			return yield* new UnknownApiError({
-				cause: `Token fetch failed with status ${response.status}`,
-			});
+			return yield* Effect.fail(
+				new UnknownApiError({
+					cause: `Token fetch failed with status ${response.status}`,
+				}),
+			);
 		}
 
 		const json = yield* Effect.tryPromise({
@@ -58,7 +65,16 @@ function fetchToken(clientId: string, clientSecret: string) {
 				}),
 		});
 
-		return yield* Schema.decodeUnknown(BaseTokenSchema)(json);
+		return yield* Schema.decodeUnknown(BaseTokenSchema)(json).pipe(
+			Effect.mapError(
+				(cause) =>
+					new SchemaDecodeError({
+						message:
+							"Failed to decode Spotify Client Credential token response",
+						cause,
+					}),
+			),
+		);
 	});
 }
 
@@ -72,23 +88,29 @@ export function makeClientCredentialsAuth(adapter: StorageAdapter) {
 
 			return AuthService.of({
 				getToken: Effect.gen(function* () {
-					const maybeToken = Option.getOrNull(yield* kv.get(TOKEN_KEY));
+					const maybeToken = Option.getOrNull(
+						yield* kv
+							.get(TOKEN_KEY)
+							.pipe(Effect.mapError((cause) => new UnknownApiError({ cause }))),
+					);
 					if (!maybeToken || maybeToken.expires_at < Date.now()) {
 						const token = yield* fetchToken(
 							Redacted.value(clientId),
 							Redacted.value(clientSecret),
 						);
 
-						yield* kv.set(TOKEN_KEY, {
-							access_token: token.access_token,
-							token_type: token.token_type,
-							expires_at: Date.now() + token.expires_in * 1000,
-						});
+						yield* kv
+							.set(TOKEN_KEY, {
+								access_token: token.access_token,
+								token_type: token.token_type,
+								expires_at: Date.now() + token.expires_in * 1000,
+							})
+							.pipe(Effect.mapError((cause) => new UnknownApiError({ cause })));
 
 						return token.access_token;
 					}
 					return maybeToken.access_token;
-				}).pipe(Effect.orDie),
+				}),
 			});
 		}),
 	).pipe(

@@ -1,4 +1,4 @@
-import { Duration, Effect, Schema, Option, Schedule } from "effect";
+import { Duration, Effect, Schema, Schedule } from "effect";
 import {
 	type ApiError,
 	BadRequestError,
@@ -88,35 +88,27 @@ export function makeRequest<T, I, R>({
 			const { status, message } = spotifyError.error;
 			switch (status) {
 				case 400:
-					return yield* new BadRequestError({ cause: message });
+					return yield* Effect.fail(new BadRequestError({ cause: message }));
 				case 401:
-					return yield* new UnauthorizedError({ cause: message });
+					return yield* Effect.fail(new UnauthorizedError({ cause: message }));
 				case 403:
-					return yield* new ForbiddenError({ cause: message });
+					return yield* Effect.fail(new ForbiddenError({ cause: message }));
 				case 404:
-					return yield* new NotFoundError({ cause: message });
+					return yield* Effect.fail(new NotFoundError({ cause: message }));
 				case 429: {
-					const retryHeader = yield* Option.fromNullable(
-						response.headers.get("Retry-After"),
-					).pipe(
-						Option.andThen((seconds) => {
-							return Schema.decode(Schema.NumberFromString)(seconds);
-						}),
-						Effect.transposeOption,
-						Effect.andThen(
-							Option.getOrElse(() => {
-								return 15;
-							}),
-						),
-					);
+					const retryAfterHeader = response.headers.get("Retry-After");
+					const retryHeader =
+						retryAfterHeader !== null ? Number(retryAfterHeader) || 15 : 15;
 
-					return yield* new RateLimitError({
-						cause: message,
-						retryAfter: Duration.seconds(retryHeader),
-					});
+					return yield* Effect.fail(
+						new RateLimitError({
+							cause: message,
+							retryAfter: Duration.seconds(retryHeader),
+						}),
+					);
 				}
 				default:
-					return yield* new UnknownApiError({ cause: message });
+					return yield* Effect.fail(new UnknownApiError({ cause: message }));
 			}
 		}
 

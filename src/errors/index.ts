@@ -72,6 +72,20 @@ export class UnknownApiError extends Schema.TaggedError<UnknownApiError>()(
 	},
 ) {}
 
+export class TokenNotFoundError extends Schema.TaggedError<TokenNotFoundError>()(
+	"TokenNotFoundError",
+	{
+		message: Schema.String,
+	},
+) {}
+
+export class InvalidStateError extends Schema.TaggedError<InvalidStateError>()(
+	"InvalidStateError",
+	{
+		message: Schema.String,
+	},
+) {}
+
 import type { ParseError } from "effect/ParseResult";
 
 export type ApiError =
@@ -84,4 +98,5 @@ export type ApiError =
 	| ForbiddenError
 	| NotFoundError
 	| RateLimitError
-	| UnknownApiError;
+	| UnknownApiError
+	| TokenNotFoundError;
