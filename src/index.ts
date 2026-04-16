@@ -632,11 +632,11 @@ class BetterMusicClient {
 	}
 	get search() {
 		return {
-			search: (request: SearchRequest, options?: MarketExternalOptions) =>
+			query: (request: SearchRequest, options?: MarketExternalOptions) =>
 				this.run(
 					Effect.gen(function* () {
 						const s = yield* SearchService;
-						return yield* s.search(request, options);
+						return yield* s.query(request, options);
 					}),
 				),
 		};

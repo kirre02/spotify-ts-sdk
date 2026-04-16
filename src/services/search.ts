@@ -13,7 +13,7 @@ import { IllegalArgumentException } from "effect/Cause";
 export class SearchService extends Context.Tag("SearchService")<
 	SearchService,
 	{
-		readonly search: (
+		readonly query: (
 			request: SearchRequest,
 			options?: MarketExternalOptions,
 		) => Effect.Effect<SearchResponse, ApiError, AuthService>;
@@ -24,7 +24,7 @@ export const SearchServiceLive = Layer.effect(
 	SearchService,
 	Effect.gen(function* () {
 		return SearchService.of({
-			search: (request: SearchRequest, options?: MarketExternalOptions) => {
+			query: (request: SearchRequest, options?: MarketExternalOptions) => {
 				const { query, types } = request;
 
 				if (options?.limit !== undefined) {
