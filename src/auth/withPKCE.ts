@@ -145,7 +145,7 @@ export function makePKCEAuth(adapter: StorageAdapter, scopes: string[]) {
 						return yield* Effect.fail(
 							new TokenNotFoundError({
 								message:
-									"No token found. Call login() and exchange(code) first.",
+									"No token found. Call getAuthorizationUrl() and exchangeCodeForTokens(code) first.",
 							}),
 						);
 					}
@@ -192,7 +192,7 @@ export function makePKCEAuth(adapter: StorageAdapter, scopes: string[]) {
 
 			const removeVerifier = Effect.ignore(verifierKv.remove(VERIFIER_KEY));
 
-			const login = Effect.gen(function* () {
+			const getAuthorizationUrl = Effect.gen(function* () {
 				const { codeVerifier, codeChallenge } = yield* generatePKCE();
 
 				const state = crypto.randomUUID();
@@ -216,122 +216,119 @@ export function makePKCEAuth(adapter: StorageAdapter, scopes: string[]) {
 					redirect_uri: redirectUri,
 				}).toString();
 
-				const exchange = (params: { code: string; state: string }) =>
-					Effect.gen(function* () {
-						const stored = Option.getOrNull(
-							yield* verifierKv
-								.get(VERIFIER_KEY)
-								.pipe(
-									Effect.mapError((cause) => new UnknownApiError({ cause })),
-								),
-						);
-
-						if (!stored) {
-							return yield* Effect.fail(
-								new TokenNotFoundError({
-									message: "Missing PKCE verifier. Call login() first.",
-								}),
-							);
-						}
-
-						if (params.state !== stored.state) {
-							return yield* Effect.fail(
-								new InvalidStateError({
-									message: "Invalid state. Possible CSRF attack.",
-								}),
-							);
-						}
-
-						const response = yield* Effect.tryPromise({
-							try: () =>
-								fetch("https://accounts.spotify.com/api/token", {
-									method: "POST",
-									headers: {
-										"Content-Type": "application/x-www-form-urlencoded",
-									},
-									body: new URLSearchParams({
-										client_id: clientId,
-										grant_type: "authorization_code",
-										code: params.code,
-										redirect_uri: redirectUri,
-										code_verifier: stored.code_verifier,
-									}),
-								}),
-							catch: (cause) =>
-								new NetworkError({
-									message: "Failed sending PKCE token request",
-									url: "https://accounts.spotify.com/api/token",
-									cause,
-								}),
-						});
-
-						if (!response.ok) {
-							const body = yield* Effect.tryPromise({
-								try: () => response.text(),
-								catch: (cause) =>
-									new JsonParseError({
-										message: "Failed to read error body",
-										cause,
-									}),
-							});
-							console.error("Token exchange error body:", body);
-							return yield* Effect.fail(
-								new UnknownApiError({
-									cause: `Token fetch failed with status ${response.status}`,
-								}),
-							);
-						}
-
-						const json = yield* Effect.tryPromise({
-							try: () => response.json(),
-							catch: (cause) =>
-								new JsonParseError({
-									message: "Failed to transform PKCE token response",
-									cause,
-								}),
-						});
-
-						const token = yield* Schema.decodeUnknown(PKCETokenExtensionSchema)(
-							json,
-						).pipe(
-							Effect.mapError(
-								(cause) =>
-									new SchemaDecodeError({
-										message: "Failed to decode Spotify PKCE token response",
-										cause,
-									}),
-							),
-						);
-
-						if (!token.refresh_token) {
-							return yield* Effect.fail(
-								new TokenNotFoundError({
-									message: "No refresh_token in Spotify response",
-								}),
-							);
-						}
-
-						yield* tokenKv
-							.set(TOKEN_KEY, {
-								access_token: token.access_token,
-								token_type: token.token_type,
-								expires_at: Date.now() + token.expires_in * 1000,
-								scope: token.scope,
-								refresh_token: token.refresh_token,
-							})
-							.pipe(Effect.mapError((cause) => new UnknownApiError({ cause })));
-
-						return token.access_token;
-					}).pipe(Effect.ensuring(removeVerifier));
-
-				return {
-					url: authUrl.toString(),
-					exchange,
-				};
+				return authUrl.toString();
 			});
 
+			const exchangeCodeForTokens = (params: { code: string; state: string }) =>
+				Effect.gen(function* () {
+					const stored = Option.getOrNull(
+						yield* verifierKv
+							.get(VERIFIER_KEY)
+							.pipe(Effect.mapError((cause) => new UnknownApiError({ cause }))),
+					);
+
+					if (!stored) {
+						return yield* Effect.fail(
+							new TokenNotFoundError({
+								message:
+									"Missing PKCE verifier. Call getAuthorizationUrl() first.",
+							}),
+						);
+					}
+
+					if (params.state !== stored.state) {
+						return yield* Effect.fail(
+							new InvalidStateError({
+								message: "Invalid state. Possible CSRF attack.",
+							}),
+						);
+					}
+
+					const response = yield* Effect.tryPromise({
+						try: () =>
+							fetch("https://accounts.spotify.com/api/token", {
+								method: "POST",
+								headers: {
+									"Content-Type": "application/x-www-form-urlencoded",
+								},
+								body: new URLSearchParams({
+									client_id: clientId,
+									grant_type: "authorization_code",
+									code: params.code,
+									redirect_uri: redirectUri,
+									code_verifier: stored.code_verifier,
+								}),
+							}),
+						catch: (cause) =>
+							new NetworkError({
+								message: "Failed sending PKCE token request",
+								url: "https://accounts.spotify.com/api/token",
+								cause,
+							}),
+					});
+
+					if (!response.ok) {
+						const body = yield* Effect.tryPromise({
+							try: () => response.text(),
+							catch: (cause) =>
+								new JsonParseError({
+									message: "Failed to read error body",
+									cause,
+								}),
+						});
+						console.error("Token exchange error body:", body);
+						return yield* Effect.fail(
+							new UnknownApiError({
+								cause: `Token fetch failed with status ${response.status}`,
+							}),
+						);
+					}
+
+					const json = yield* Effect.tryPromise({
+						try: () => response.json(),
+						catch: (cause) =>
+							new JsonParseError({
+								message: "Failed to transform PKCE token response",
+								cause,
+							}),
+					});
+
+					const token = yield* Schema.decodeUnknown(PKCETokenExtensionSchema)(
+						json,
+					).pipe(
+						Effect.mapError(
+							(cause) =>
+								new SchemaDecodeError({
+									message: "Failed to decode Spotify PKCE token response",
+									cause,
+								}),
+						),
+					);
+
+					if (!token.refresh_token) {
+						return yield* Effect.fail(
+							new TokenNotFoundError({
+								message: "No refresh_token in Spotify response",
+							}),
+						);
+					}
+
+					yield* tokenKv
+						.set(TOKEN_KEY, {
+							access_token: token.access_token,
+							token_type: token.token_type,
+							expires_at: Date.now() + token.expires_in * 1000,
+							scope: token.scope,
+							refresh_token: token.refresh_token,
+						})
+						.pipe(Effect.mapError((cause) => new UnknownApiError({ cause })));
+
+					return token.access_token;
+				}).pipe(Effect.ensuring(removeVerifier));
+
 			return PKCEService.of({
-				login,
+				getAuthorizationUrl,
+				exchangeCodeForTokens,
 			});
 		}),
 	);

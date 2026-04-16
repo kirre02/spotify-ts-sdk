@@ -37,16 +37,11 @@ type AuthError =
 export class PKCEService extends Context.Tag("PKCEService")<
 	PKCEService,
 	{
-		login: Effect.Effect<
-			{
-				url: string;
-				exchange: (params: {
-					code: string;
-					state: string;
-				}) => Effect.Effect<string, AuthError>;
-			},
-			AuthError
-		>;
+		getAuthorizationUrl: Effect.Effect<string, AuthError>;
+		exchangeCodeForTokens: (params: {
+			code: string;
+			state: string;
+		}) => Effect.Effect<string, AuthError>;
 	}
 >() {}
 

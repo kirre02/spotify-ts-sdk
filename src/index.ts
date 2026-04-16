@@ -834,19 +834,21 @@ export const BetterMusic = {
 		const runtime = ManagedRuntime.make(layer);
 
 		return {
-			login: async () => {
-				const pkce = await runtime.runPromise(
-					Effect.gen(function* () {
-						const pkce = yield* PKCEService;
-						return yield* pkce.login;
-					}),
-				);
-
-				return {
-					url: pkce.url,
-					exchange: (params: { code: string; state: string }) =>
-						runtime.runPromise(pkce.exchange(params)),
-				};
+			auth: {
+				getAuthorizationUrl: () =>
+					runtime.runPromise(
+						Effect.gen(function* () {
+							const pkce = yield* PKCEService;
+							return yield* pkce.getAuthorizationUrl;
+						}),
+					),
+				exchangeCodeForTokens: (params: { code: string; state: string }) =>
+					runtime.runPromise(
+						Effect.gen(function* () {
+							const pkce = yield* PKCEService;
+							return yield* pkce.exchangeCodeForTokens(params);
+						}),
+					),
 			},
 			client: new BetterMusicClient(layer),
 		};
