@@ -29,6 +29,16 @@ import {
 import type { ApiError } from "@errors/index";
 import type { AuthService } from "auth";
 import { IllegalArgumentException } from "effect/Cause";
+import {
+	guardAdditionalTypes,
+	guardContextUri,
+	guardLimit,
+	guardMarket,
+	guardSpotifyUri,
+	guardString,
+	guardTimestamp,
+	guardUris,
+} from "guards";
 
 export class PlayerService extends Context.Tag("PlayerService")<
 	PlayerService,
@@ -90,6 +100,14 @@ export const PlayerServiceLive = Layer.effect(
 	Effect.gen(function* () {
 		return PlayerService.of({
 			getPlaybackState: (options?: MarketAdditionalTypesOptions) => {
+				if (options?.market != null)
+					guardMarket(options.market, "[PlayerService/GetPlaybackState]");
+				if (options?.additional_types != null)
+					guardAdditionalTypes(
+						options.additional_types,
+						"[PlayerService/GetPlaybackState]",
+					);
+
 				return makeRequest({
 					route: "me/player",
 					schema: GetPlaybackStateResponseSchema,
@@ -98,6 +116,12 @@ export const PlayerServiceLive = Layer.effect(
 			},
 			transferPlayback: (request: TransferPlaybackRequest) => {
 				const { deviceId, playbackState } = request;
+
+				guardString(deviceId, "[PlayerService/TransferPlayback] Device id");
+				if (playbackState != null && typeof playbackState !== "boolean")
+					throw new IllegalArgumentException(
+						"[PlayerService/TransferPlayback] Playback state must be a boolean",
+					);
 
 				return makeRequest({
 					method: "PUT",
@@ -116,6 +140,14 @@ export const PlayerServiceLive = Layer.effect(
 				});
 			},
 			getCurrentlyPlaying: (options?: MarketAdditionalTypesOptions) => {
+				if (options?.market != null)
+					guardMarket(options.market, "[PlayerService/GetCurrentlyPlaying]");
+				if (options?.additional_types != null)
+					guardAdditionalTypes(
+						options.additional_types,
+						"[PlayerService/GetCurrentlyPlaying]",
+					);
+
 				return makeRequest({
 					route: "me/player/currently-playing",
 					schema: GetCurrentlyPlayingResponseSchema,
@@ -124,6 +156,42 @@ export const PlayerServiceLive = Layer.effect(
 			},
 			startOrResumePlayback: (request: StartOrResumePlaybackRequest) => {
 				const { deviceId, contextUri, uris, offset, positionMs } = request;
+
+				if (deviceId != null)
+					guardString(
+						deviceId,
+						"[PlayerService/StartOrResumePlayback] Device id",
+					);
+				if (contextUri != null && uris != null)
+					throw new IllegalArgumentException(
+						"[PlayerService/StartOrResumePlayback] Only one of contextUri & uris can be provided",
+					);
+				if (offset != null && contextUri == null)
+					throw new IllegalArgumentException(
+						"[PlayerService/StartOrResumePlayback] Offset can only be used with contextUri",
+					);
+				if (contextUri != null)
+					guardContextUri(
+						contextUri,
+						"[PlayerService/StartOrResumePlayback] Context uri",
+					);
+				if (uris != null)
+					guardUris(uris, "[PlayerService/StartOrResumePlayback] Uris");
+				if (offset != null && "position" in offset) {
+					if (offset.position < 0)
+						throw new IllegalArgumentException(
+							"[PlayerService/StartOrResumePlayback] Offset position can not be negative",
+						);
+				}
+				if (offset != null && "uri" in offset)
+					guardSpotifyUri(
+						offset.uri,
+						"[PlayerService/StartOrResumePlayback] Offset uri",
+					);
+				if (positionMs != null && positionMs < 0)
+					throw new IllegalArgumentException(
+						"[PlayerService/StartOrResumePlayback] Position ms can not be negative",
+					);
 
 				return makeRequest({
 					method: "PUT",
@@ -142,6 +210,9 @@ export const PlayerServiceLive = Layer.effect(
 			pausePlayback: (request: PausePlaybackRequest) => {
 				const { deviceId } = request;
 
+				if (deviceId != null)
+					guardString(deviceId, "[PlayerService/PausePlayback] Device id");
+
 				return makeRequest({
 					method: "PUT",
 					route: deviceId
@@ -152,6 +223,9 @@ export const PlayerServiceLive = Layer.effect(
 			},
 			skipToNext: (request: SkipToNextRequest) => {
 				const { deviceId } = request;
+
+				if (deviceId != null)
+					guardString(deviceId, "[PlayerService/SkipToNext] Device id");
 
 				return makeRequest({
 					method: "POST",
@@ -164,6 +238,9 @@ export const PlayerServiceLive = Layer.effect(
 			skipToPrevious: (request: SkipToPreviousRequest) => {
 				const { deviceId } = request;
 
+				if (deviceId != null)
+					guardString(deviceId, "[PlayerService/SkipToPrevious] Device id");
+
 				return makeRequest({
 					method: "POST",
 					route: deviceId
@@ -175,6 +252,17 @@ export const PlayerServiceLive = Layer.effect(
 			seekToPosition: (request: SeekToPositionRequest) => {
 				const { positionMs, deviceId } = request;
 
+				if (positionMs == null)
+					throw new IllegalArgumentException(
+						"[PlayerService/SeekToPosition] Position ms must be provided",
+					);
+				if (positionMs < 0)
+					throw new IllegalArgumentException(
+						"[PlayerService/SeekToPosition] Position ms can not be negative",
+					);
+				if (deviceId != null)
+					guardString(deviceId, "[PlayerService/SeekToPosition] Device id");
+
 				return makeRequest({
 					method: "PUT",
 					route: deviceId
@@ -185,6 +273,13 @@ export const PlayerServiceLive = Layer.effect(
 			},
 			setRepeatMode: (request: SetRepeatModeRequest) => {
 				const { state, deviceId } = request;
+
+				if (state !== "track" && state !== "context" && state !== "off")
+					throw new IllegalArgumentException(
+						"[PlayerService/SetRepeatMode] State must be either track, context or off",
+					);
+				if (deviceId != null)
+					guardString(deviceId, "[PlayerService/SetRepeatMode] Device id");
 
 				return makeRequest({
 					method: "PUT",
@@ -199,9 +294,11 @@ export const PlayerServiceLive = Layer.effect(
 
 				if (volumePercent < 0 || volumePercent > 100) {
 					throw new IllegalArgumentException(
-						"Volume percent must be between 0 and 100",
+						"[PlayerService/SetPlaybackVolume] Volume percent must be between 0 and 100",
 					);
 				}
+				if (deviceId != null)
+					guardString(deviceId, "[PlayerService/SetPlaybackVolume] Device id");
 
 				return makeRequest({
 					method: "PUT",
@@ -214,6 +311,17 @@ export const PlayerServiceLive = Layer.effect(
 			togglePlaybackShuffle: (request: TogglePlaybackShuffleRequest) => {
 				const { state, deviceId } = request;
 
+				if (typeof state !== "boolean")
+					throw new IllegalArgumentException(
+						"[PlayerService/TogglePlaybackShuffle] State must be a boolean",
+					);
+
+				if (deviceId != null)
+					guardString(
+						deviceId,
+						"[PlayerService/TogglePlaybackShuffle] Device id",
+					);
+
 				return makeRequest({
 					method: "PUT",
 					route: deviceId
@@ -223,13 +331,26 @@ export const PlayerServiceLive = Layer.effect(
 				});
 			},
 			getRecentlyPlayed: (options?: DateRangeOptions) => {
-				if (options?.limit !== undefined) {
-					if (options.limit < 0 || options.limit > 50) {
-						throw new IllegalArgumentException(
-							"Limit must be between 0 and 50",
-						);
-					}
+				if (options?.limit != null)
+					guardLimit(options.limit, 50, "[PlayerService/GetRecentlyPlayed]");
+				if (options != null && "before" in options && "after" in options) {
+					throw new IllegalArgumentException(
+						"[PlayerService/GetRecentlyPlayed] Can not specify both before and after",
+					);
+				} else if (
+					options != null &&
+					"before" in options &&
+					options.before != null
+				) {
+					guardTimestamp(options.before, "[PlayerService/GetRecentlyPlayed]");
+				} else if (
+					options != null &&
+					"after" in options &&
+					options.after != null
+				) {
+					guardTimestamp(options.after, "[PlayerService/GetRecentlyPlayed]");
 				}
+
 				return makeRequest({
 					route: "me/player/recently-played",
 					schema: GetRecentlyPlayedResponseSchema,
@@ -244,6 +365,18 @@ export const PlayerServiceLive = Layer.effect(
 			},
 			addToPlaybackQueue: (request: AddToPlaybackQueueRequest) => {
 				const { uri, deviceId } = request;
+
+				guardSpotifyUri(uri, "[PlayerService/AddToPlaybackQueue] uri");
+				if (
+					!uri.startsWith("spotify:track") &&
+					!uri.startsWith("spotify:episode")
+				)
+					throw new IllegalArgumentException(
+						"[PlayerService/AddToPlaybackQueue] Provided uri must be a track or an episode uri",
+					);
+
+				if (deviceId != null)
+					guardString(deviceId, "[PlayerService/AddToPlaybackQueue] Device id");
 
 				return makeRequest({
 					method: "POST",

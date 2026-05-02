@@ -1,3 +1,30 @@
+export type Scopes =
+	| "ugc-image-upload"
+	| "user-read-playback-state"
+	| "user-modify-playback-state"
+	| "user-read-currently-playing"
+	| "app-remote-control"
+	| "streaming"
+	| "playlist-read-private"
+	| "playlist-read-collaborative"
+	| "playlist-modify-private"
+	| "playlist-modify-public"
+	| "user-follow-modify"
+	| "user-follow-read"
+	| "user-read-playback-position"
+	| "user-top-read"
+	| "user-read-recently-played"
+	| "user-library-modify"
+	| "user-library-read"
+	| "user-read-email"
+	| "user-read-private"
+	| "user-personalized"
+	| "user-soa-link"
+	| "user-soa-unlink"
+	| "soa-manage-entitlements"
+	| "soa-manage-partner"
+	| "soa-create-partner";
+
 type Market =
 	| "AD"
 	| "AE"
@@ -896,7 +923,7 @@ export type LocalizedPaginationOptions = {
 	 * Use with limit to get the next set of items.
 	 * Default: 0 (the first item).
 	 */
-	offset: number;
+	offset?: number;
 };
 
 export type MarketAdditionalTypesOptions = {
@@ -967,7 +994,7 @@ export type MarketFieldOptions = {
 	 * Use multiple parentheses to drill down into nested objects, for example: `fields=["tracks.items(track(name,href,album(name,href)))"]`.
 	 * Fields can be excluded by prefixing them with an exclamation mark, for example: `fields=["tracks.items(track(name,href,album(!name,href)))"]`
 	 */
-	fields?: string[];
+	fields?: string;
 	/**
 	 * A list of item types that your client supports besides the default track type.
 	 *
@@ -994,7 +1021,7 @@ export type DetailedMarketPaginationOptions = {
 	 * Use multiple parentheses to drill down into nested objects, for example: `fields=["items(track(name,href,album(name,href)))"]`.
 	 * Fields can be excluded by prefixing them with an exclamation mark, for example: `fields=["items.track.album(!external_urls,images)"]`
 	 */
-	fields?: string[];
+	fields?: string;
 	/**
 	 * The maximum number of items to return.
 	 *

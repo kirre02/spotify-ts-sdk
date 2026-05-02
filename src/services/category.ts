@@ -13,7 +13,7 @@ import {
 } from "@internal/services/category";
 import type { ApiError } from "@errors/index";
 import type { AuthService } from "auth";
-import { IllegalArgumentException } from "effect/Cause";
+import { guardLimit, guardLocale, guardOffset, guardString } from "guards";
 
 export class CategoryService extends Context.Tag("CategoryService")<
 	CategoryService,
@@ -35,6 +35,10 @@ export const CategoryServiceLive = Layer.effect(
 			get: (request: GetCategoryRequest, options?: LocaleOnlyOptions) => {
 				const { id } = request;
 
+				guardString(id, "[CategoryService/Get] Id");
+				if (options?.locale != null)
+					guardLocale(options.locale, "[CategoryService/Get]");
+
 				return makeRequest({
 					route: `browse/categories/${id.trim()}`,
 					schema: GetCategoryResponseSchema,
@@ -42,13 +46,13 @@ export const CategoryServiceLive = Layer.effect(
 				});
 			},
 			getMany: (options?: LocalizedPaginationOptions) => {
-				if (options?.limit !== undefined) {
-					if (options.limit < 0 || options.limit > 50) {
-						throw new IllegalArgumentException(
-							"Limit must be between 0 and 50",
-						);
-					}
-				}
+				if (options?.locale != null)
+					guardLocale(options.locale, "[CategoryService/GetMany]");
+				if (options?.limit != null)
+					guardLimit(options.limit, 50, "[CategoryService/GetMany]");
+				if (options?.offset != null)
+					guardOffset(options.offset, "[CategoryService/GetMany]");
+
 				return makeRequest({
 					route: `browse/categories`,
 					schema: GetSeveralCategoryResponseSchema,

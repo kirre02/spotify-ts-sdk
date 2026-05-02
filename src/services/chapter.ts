@@ -1,7 +1,6 @@
 import { Effect, Context, Layer } from "effect";
 import { makeRequest } from "@core/client";
 import type { MarketOnlyOptions } from "@internal/options";
-import { IllegalArgumentException } from "effect/Cause";
 import {
 	GetChapterResponseSchema,
 	GetSeveralChapterResponseSchema,
@@ -12,6 +11,7 @@ import {
 } from "@internal/services/chapter";
 import type { ApiError } from "@errors/index";
 import type { AuthService } from "auth";
+import { guardId, guardIds, guardMarket } from "guards";
 
 export class ChapterService extends Context.Tag("ChapterService")<
 	ChapterService,
@@ -34,6 +34,10 @@ export const ChapterServiceLive = Layer.effect(
 			get: (request: GetChapterRequest, options?: MarketOnlyOptions) => {
 				const { id } = request;
 
+				guardId(id, "[ChapterService/Get] Chapter id");
+				if (options?.market != null)
+					guardMarket(options.market, "[ChapterService/Get]");
+
 				return makeRequest({
 					route: `chapters/${id.trim()}`,
 					schema: GetChapterResponseSchema,
@@ -46,10 +50,9 @@ export const ChapterServiceLive = Layer.effect(
 			) => {
 				const { ids } = request;
 
-				if (ids.length > 50)
-					throw new IllegalArgumentException(
-						"Maximum 50 IDs allowed per request",
-					);
+				guardIds(ids, "[ChapterService/GetMany] Chapter ids", 50);
+				if (options?.market != null)
+					guardMarket(options.market, "[ChapterService/GetMany]");
 
 				const encodedIds = ids
 					.map((id) => id.trim())

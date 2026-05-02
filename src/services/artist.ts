@@ -21,6 +21,14 @@ import {
 } from "@internal/services/artist";
 import type { ApiError } from "@errors/index";
 import type { AuthService } from "auth";
+import {
+	guardArrays,
+	guardId,
+	guardIds,
+	guardLimit,
+	guardMarket,
+	guardOffset,
+} from "guards";
 
 export class ArtistService extends Context.Tag("ArtistService")<
 	ArtistService,
@@ -49,6 +57,8 @@ export const ArtistServiceLive = Layer.effect(
 			get: (request: GetArtistRequest) => {
 				const { id } = request;
 
+				guardId(id, "[ArtistService/Get] Artist id");
+
 				return makeRequest({
 					route: `artists/${id.trim()}`,
 					schema: GetArtistResponseSchema,
@@ -57,10 +67,7 @@ export const ArtistServiceLive = Layer.effect(
 			getMany: (request: GetSeveralArtistRequest) => {
 				const { ids } = request;
 
-				if (ids.length > 50)
-					throw new IllegalArgumentException(
-						"Maximum 50 IDs allowed per request",
-					);
+				guardIds(ids, "[ArtistService/GetMany] Artist ids", 50);
 
 				const encodedIds = ids
 					.map((id) => id.trim())
@@ -77,10 +84,27 @@ export const ArtistServiceLive = Layer.effect(
 			) => {
 				const { id } = request;
 
-				if (options?.limit !== undefined) {
-					if (options.limit < 0 || options.limit > 50) {
+				guardId(id, "[ArtistService/GetAlbums] Artist id");
+
+				if (options?.limit != null)
+					guardLimit(options.limit, 10, "[ArtistService/GetAlbums]");
+				if (options?.market != null)
+					guardMarket(options.market, "[ArtistService/GetAlbums]");
+				if (options?.offset != null)
+					guardOffset(options.offset, "[ArtistService/GetAlbums]");
+				if (options?.include_groups != null) {
+					guardArrays(options.include_groups, "[ArtistService/GetAlbums]");
+					if (
+						options.include_groups.some(
+							(group) =>
+								group !== "album" &&
+								group !== "single" &&
+								group !== "appears_on" &&
+								group !== "compilation",
+						)
+					) {
 						throw new IllegalArgumentException(
-							"Limit must be between 0 and 50",
+							'[ArtistService/GetAlbums] Include groups can only contain "album", "single", "appears_on" or "compilation"',
 						);
 					}
 				}
@@ -96,6 +120,10 @@ export const ArtistServiceLive = Layer.effect(
 				options?: MarketOnlyOptions,
 			) => {
 				const { id } = request;
+
+				guardId(id, "[ArtistService/GetTopTracks] Artist id");
+				if (options?.market != null)
+					guardMarket(options.market, "[ArtistService/GetTopTracks]");
 
 				return makeRequest({
 					route: `artists/${id.trim()}/top-tracks`,

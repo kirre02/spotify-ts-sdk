@@ -5,7 +5,6 @@ import type {
 	PaginatedMarketOptions,
 	PaginationOptions,
 } from "@internal/options";
-import { IllegalArgumentException } from "effect/Cause";
 import {
 	GetAudiobookChapterResponseSchema,
 	GetAudiobookResponseSchema,
@@ -24,6 +23,13 @@ import {
 } from "@internal/services/audiobook";
 import type { ApiError } from "@errors/index";
 import type { AuthService } from "auth";
+import {
+	guardId,
+	guardIds,
+	guardLimit,
+	guardMarket,
+	guardOffset,
+} from "guards";
 
 export class AudiobookService extends Context.Tag("AudiobookService")<
 	AudiobookService,
@@ -62,6 +68,10 @@ export const AudiobookServiceLive = Layer.effect(
 			get: (request: GetAudiobookRequest, options?: MarketOnlyOptions) => {
 				const { id } = request;
 
+				guardId(id, "[AudiobookService/Get] Audiobook id");
+				if (options?.market != null)
+					guardMarket(options.market, "[AudiobookService/Get]");
+
 				return makeRequest({
 					route: `audiobooks/${id.trim()}`,
 					schema: GetAudiobookResponseSchema,
@@ -74,10 +84,9 @@ export const AudiobookServiceLive = Layer.effect(
 			) => {
 				const { ids } = request;
 
-				if (ids.length > 50)
-					throw new IllegalArgumentException(
-						"Maximum 50 IDs allowed per request",
-					);
+				guardIds(ids, "[AudiobookService/GetMany] Audiobook ids", 50);
+				if (options?.market != null)
+					guardMarket(options.market, "[AudiobookService/GetMany]");
 
 				const encodedIds = ids
 					.map((id) => id.trim())
@@ -95,13 +104,14 @@ export const AudiobookServiceLive = Layer.effect(
 			) => {
 				const { id } = request;
 
-				if (options?.limit !== undefined) {
-					if (options.limit < 0 || options.limit > 50) {
-						throw new IllegalArgumentException(
-							"Limit must be between 0 and 50",
-						);
-					}
-				}
+				guardId(id, "[AudiobookService/GetChapters] Audiobook id");
+
+				if (options?.market != null)
+					guardMarket(options.market, "[AudiobookService/GetChapters]");
+				if (options?.limit != null)
+					guardLimit(options.limit, 50, "[AudiobookService/GetChapters]");
+				if (options?.offset != null)
+					guardOffset(options.offset, "[AudiobookService/GetChapters]");
 
 				return makeRequest({
 					route: `audiobooks/${id.trim()}/chapters`,
@@ -110,13 +120,10 @@ export const AudiobookServiceLive = Layer.effect(
 				});
 			},
 			getSaved: (options?: PaginationOptions) => {
-				if (options?.limit !== undefined) {
-					if (options.limit < 0 || options.limit > 50) {
-						throw new IllegalArgumentException(
-							"Limit must be between 0 and 50",
-						);
-					}
-				}
+				if (options?.limit != null)
+					guardLimit(options.limit, 50, "[AudiobookService/GetSaved]");
+				if (options?.offset != null)
+					guardOffset(options.offset, "[AudiobookService/GetSaved]");
 
 				return makeRequest({
 					route: "me/audiobooks",
@@ -127,10 +134,7 @@ export const AudiobookServiceLive = Layer.effect(
 			save: (request: SaveAudiobookRequest) => {
 				const { ids } = request;
 
-				if (ids.length > 50)
-					throw new IllegalArgumentException(
-						"Maximum 50 IDs allowed per request",
-					);
+				guardIds(ids, "[AudiobookService/Save] Audiobook ids", 50);
 
 				const encodedIds = ids
 					.map((id) => id.trim())
@@ -145,10 +149,7 @@ export const AudiobookServiceLive = Layer.effect(
 			remove: (request: RemoveAudiobookRequest) => {
 				const { ids } = request;
 
-				if (ids.length > 50)
-					throw new IllegalArgumentException(
-						"Maximum 50 IDs allowed per request",
-					);
+				guardIds(ids, "[AudiobookService/Remove] Audiobook ids", 50);
 
 				const encodedIds = ids
 					.map((id) => id.trim())
@@ -163,10 +164,7 @@ export const AudiobookServiceLive = Layer.effect(
 			checkSaved: (request: CheckSavedAudiobookRequest) => {
 				const { ids } = request;
 
-				if (ids.length > 50)
-					throw new IllegalArgumentException(
-						"Maximum 50 IDs allowed per request",
-					);
+				guardIds(ids, "[AudiobookService/CheckSaved] Audiobook ids", 50);
 
 				const encodedIds = ids
 					.map((id) => id.trim())

@@ -8,24 +8,34 @@ import type {
 import {
 	GetCurrentUserResponseSchema,
 	GetFollowedArtistResponseSchema,
-	GetTopItemsResponseSchema,
+	GetTopArtistsResponseSchema,
+	GetTopTracksResponseSchema,
 	GetUserProfileResponseSchema,
-	type CheckUserFollowPlaylistRequest,
-	type CheckUserFollowRequest,
 	type GetCurrentUserResponse,
-	type GetFollowedArtistRequest,
 	type GetFollowedArtistResponse,
-	type GetTopItemsRequest,
-	type GetTopItemsResponse,
+	type GetTopArtistsResponse,
+	type GetTopTracksResponse,
 	type GetUserProfileRequest,
 	type GetUserProfileResponse,
+	type IsFollowingArtistsRequest,
+	type IsFollowingPlaylistRequest,
+	type IsFollowingUsersRequest,
+	type UserFollowArtistsRequest,
 	type UserFollowPlaylistRequest,
-	type UserFollowRequest,
+	type UserFollowUsersRequest,
+	type UserUnfollowArtistsRequest,
 	type UserUnfollowPlaylistRequest,
-	type UserUnfollowRequest,
+	type UserUnfollowUsersRequest,
 } from "@internal/services/user";
 import type { ApiError } from "@errors/index";
 import type { AuthService } from "auth";
+import {
+	guardId,
+	guardIds,
+	guardLimit,
+	guardOffset,
+	guardString,
+} from "guards";
 
 export class UserService extends Context.Tag("UserService")<
 	UserService,
@@ -35,10 +45,12 @@ export class UserService extends Context.Tag("UserService")<
 			ApiError,
 			AuthService
 		>;
-		readonly getTopItems: (
-			request: GetTopItemsRequest,
+		readonly getTopArtists: (
 			options?: TimeRangePaginationOptions,
-		) => Effect.Effect<GetTopItemsResponse, ApiError, AuthService>;
+		) => Effect.Effect<GetTopArtistsResponse, ApiError, AuthService>;
+		readonly getTopTracks: (
+			options?: TimeRangePaginationOptions,
+		) => Effect.Effect<GetTopTracksResponse, ApiError, AuthService>;
 		readonly getUser: (
 			request: GetUserProfileRequest,
 		) => Effect.Effect<GetUserProfileResponse, ApiError, AuthService>;
@@ -49,20 +61,28 @@ export class UserService extends Context.Tag("UserService")<
 			request: UserUnfollowPlaylistRequest,
 		) => Effect.Effect<void, ApiError, AuthService>;
 		readonly getFollowedArtists: (
-			request: GetFollowedArtistRequest,
 			options?: AfterBasedPaginationOptions,
 		) => Effect.Effect<GetFollowedArtistResponse, ApiError, AuthService>;
-		readonly follow: (
-			request: UserFollowRequest,
+		readonly followArtists: (
+			request: UserFollowArtistsRequest,
 		) => Effect.Effect<void, ApiError, AuthService>;
-		readonly unfollow: (
-			request: UserUnfollowRequest,
+		readonly followUsers: (
+			request: UserFollowUsersRequest,
 		) => Effect.Effect<void, ApiError, AuthService>;
-		readonly checkFollowed: (
-			request: CheckUserFollowRequest,
+		readonly unfollowArtists: (
+			request: UserUnfollowArtistsRequest,
+		) => Effect.Effect<void, ApiError, AuthService>;
+		readonly unfollowUsers: (
+			request: UserUnfollowUsersRequest,
+		) => Effect.Effect<void, ApiError, AuthService>;
+		readonly isFollowingArtists: (
+			request: IsFollowingArtistsRequest,
+		) => Effect.Effect<readonly boolean[], ApiError, AuthService>;
+		readonly isFollowingUsers: (
+			request: IsFollowingUsersRequest,
 		) => Effect.Effect<readonly boolean[], ApiError, AuthService>;
 		readonly isFollowingPlaylist: (
-			request: CheckUserFollowPlaylistRequest,
+			request: IsFollowingPlaylistRequest,
 		) => Effect.Effect<readonly boolean[], ApiError, AuthService>;
 	}
 >() {}
@@ -77,28 +97,58 @@ export const UserServiceLive = Layer.effect(
 					schema: GetCurrentUserResponseSchema,
 				});
 			},
-			getTopItems: (
-				request: GetTopItemsRequest,
-				options?: TimeRangePaginationOptions,
-			) => {
-				const { type } = request;
+			getTopArtists: (options?: TimeRangePaginationOptions) => {
+				if (options?.limit != null)
+					guardLimit(options.limit, 50, "[UserService/GetTopArtists]");
+				if (options?.offset != null)
+					guardOffset(options.offset, "[UserService/GetTopArtists]");
 
-				if (options?.limit !== undefined) {
-					if (options.limit < 0 || options.limit > 50) {
+				if (options?.time_range != null) {
+					if (
+						options.time_range !== "long_term" &&
+						options.time_range !== "medium_term" &&
+						options.time_range !== "short_term"
+					) {
 						throw new IllegalArgumentException(
-							"Limit must be between 0 and 50",
+							'[UserService/GetTopArtists] Time range must be one of "long_term", "medium_term" or "short_term"',
 						);
 					}
 				}
 
 				return makeRequest({
-					route: `me/top/${type}`,
-					schema: GetTopItemsResponseSchema,
+					route: `me/top/artists`,
+					schema: GetTopArtistsResponseSchema,
+					options,
+				});
+			},
+			getTopTracks: (options?: TimeRangePaginationOptions) => {
+				if (options?.limit != null)
+					guardLimit(options.limit, 50, "[UserService/GetTopTracks]");
+				if (options?.offset != null)
+					guardOffset(options.offset, "[UserService/GetTopTracks]");
+
+				if (options?.time_range != null) {
+					if (
+						options.time_range !== "long_term" &&
+						options.time_range !== "medium_term" &&
+						options.time_range !== "short_term"
+					) {
+						throw new IllegalArgumentException(
+							'[UserService/GetTopTracks] Time range must be one of "long_term", "medium_term" or "short_term"',
+						);
+					}
+				}
+
+				return makeRequest({
+					route: `me/top/tracks`,
+					schema: GetTopTracksResponseSchema,
 					options,
 				});
 			},
 			getUser: (request: GetUserProfileRequest) => {
 				const { id } = request;
+
+				guardString(id, "[UserService/GetUser] User id");
 
 				return makeRequest({
 					route: `users/${id.trim()}`,
@@ -107,6 +157,15 @@ export const UserServiceLive = Layer.effect(
 			},
 			followPlaylist: (request: UserFollowPlaylistRequest) => {
 				const { id, isPublic } = request;
+
+				guardId(id, "[UserService/FollowPlaylist] Playlist id");
+
+				if (isPublic != null) {
+					if (typeof isPublic !== "boolean")
+						throw new IllegalArgumentException(
+							"[UserService/FollowPlaylist] isPublic must be a boolean",
+						);
+				}
 
 				return makeRequest({
 					method: "PUT",
@@ -120,39 +179,31 @@ export const UserServiceLive = Layer.effect(
 			unfollowPlaylist: (request: UserUnfollowPlaylistRequest) => {
 				const { id } = request;
 
+				guardId(id, "[UserService/UnfollowPlaylist] Playlist id");
+
 				return makeRequest({
 					method: "DELETE",
 					route: `playlists/${id.trim()}/followers`,
 					schema: Schema.Void,
 				});
 			},
-			getFollowedArtists: (
-				request: GetFollowedArtistRequest,
-				options?: AfterBasedPaginationOptions,
-			) => {
-				const { type } = request;
+			getFollowedArtists: (options?: AfterBasedPaginationOptions) => {
+				if (options?.limit != null)
+					guardLimit(options.limit, 50, "[UserService/GetFollowedArtists]");
 
-				if (options?.limit !== undefined) {
-					if (options.limit < 0 || options.limit > 50) {
-						throw new IllegalArgumentException(
-							"Limit must be between 0 and 50",
-						);
-					}
-				}
+				if (options?.after != null)
+					guardId(options.after, "[UserService/GetFollowedArtists] Artist id");
 
 				return makeRequest({
-					route: `me/following?type=${type}`,
+					route: "me/following?type=artist",
 					schema: GetFollowedArtistResponseSchema,
 					options,
 				});
 			},
-			follow: (request: UserFollowRequest) => {
-				const { type, ids } = request;
+			followArtists: (request: UserFollowArtistsRequest) => {
+				const { ids } = request;
 
-				if (ids.length > 50)
-					throw new IllegalArgumentException(
-						"Maximum 50 IDs allowed per request",
-					);
+				guardIds(ids, "[UserService/FollowArtists] Artist ids", 50);
 
 				const encodedIds = ids
 					.map((id) => id.trim())
@@ -160,17 +211,29 @@ export const UserServiceLive = Layer.effect(
 
 				return makeRequest({
 					method: "PUT",
-					route: `me/following?type=${type}&ids=${encodedIds}`,
+					route: `me/following?type=artist&ids=${encodedIds}`,
 					schema: Schema.Void,
 				});
 			},
-			unfollow: (request: UserUnfollowRequest) => {
-				const { type, ids } = request;
+			followUsers: (request: UserFollowUsersRequest) => {
+				const { ids } = request;
 
-				if (ids.length > 50)
-					throw new IllegalArgumentException(
-						"Maximum 50 IDs allowed per request",
-					);
+				guardIds(ids, "[UserService/FollowUsers] User ids", 50);
+
+				const encodedIds = ids
+					.map((id) => id.trim())
+					.join(encodeURIComponent(","));
+
+				return makeRequest({
+					method: "PUT",
+					route: `me/following?type=user&ids=${encodedIds}`,
+					schema: Schema.Void,
+				});
+			},
+			unfollowArtists: (request: UserUnfollowArtistsRequest) => {
+				const { ids } = request;
+
+				guardIds(ids, "[UserService/UnfollowArtists] Artist ids", 50);
 
 				const encodedIds = ids
 					.map((id) => id.trim())
@@ -178,32 +241,60 @@ export const UserServiceLive = Layer.effect(
 
 				return makeRequest({
 					method: "DELETE",
-					route: `me/following?type=${type}&ids=${encodedIds}`,
+					route: `me/following?type=artist&ids=${encodedIds}`,
 					schema: Schema.Void,
 				});
 			},
-			checkFollowed: (request: CheckUserFollowRequest) => {
-				const { ids, type } = request;
+			unfollowUsers: (request: UserUnfollowUsersRequest) => {
+				const { ids } = request;
 
-				if (ids.length > 50)
-					throw new IllegalArgumentException(
-						"Maximum 50 IDs allowed per request",
-					);
+				guardIds(ids, "[UserService/UnfollowUsers] User ids", 50);
 
 				const encodedIds = ids
 					.map((id) => id.trim())
 					.join(encodeURIComponent(","));
 
 				return makeRequest({
-					route: `me/following/contains?type=${type}&ids=${encodedIds}`,
+					method: "DELETE",
+					route: `me/following?type=user&ids=${encodedIds}`,
+					schema: Schema.Void,
+				});
+			},
+			isFollowingArtists: (request: IsFollowingArtistsRequest) => {
+				const { ids } = request;
+
+				guardIds(ids, "[UserService/IsFollowingArtists] Artist ids", 50);
+
+				const encodedIds = ids
+					.map((id) => id.trim())
+					.join(encodeURIComponent(","));
+
+				return makeRequest({
+					route: `me/following/contains?type=artist&ids=${encodedIds}`,
 					schema: Schema.Array(Schema.Boolean),
 				});
 			},
-			isFollowingPlaylist: (request: CheckUserFollowPlaylistRequest) => {
-				const { id } = request;
+			isFollowingUsers: (request: IsFollowingUsersRequest) => {
+				const { ids } = request;
+
+				guardIds(ids, "[UserService/IsFollowingUsers] User ids", 50);
+
+				const encodedIds = ids
+					.map((id) => id.trim())
+					.join(encodeURIComponent(","));
 
 				return makeRequest({
-					route: `playlist/${id.trim()}/followers/contains`,
+					route: `me/following/contains?type=user&ids=${encodedIds}`,
+					schema: Schema.Array(Schema.Boolean),
+				});
+			},
+			isFollowingPlaylist: (request: IsFollowingPlaylistRequest) => {
+				const { id } = request;
+
+				guardId(id, "[UserService/IsFollowingPlaylist] Playlist id");
+
+				return makeRequest({
+					route: `playlists/${id.trim()}/followers/contains`,
 					schema: Schema.Array(Schema.Boolean),
 				});
 			},

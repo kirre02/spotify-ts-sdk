@@ -66,7 +66,7 @@ export type TransferPlaybackRequest = {
 	/**
 	 * The playback state
 	 * `true`: ensure playback happens on new device
-	 * `false`: or not provided: keep the current playback state
+	 * `false or not provided`: keep the current playback state
 	 */
 	playbackState?: boolean;
 };

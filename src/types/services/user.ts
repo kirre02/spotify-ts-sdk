@@ -56,18 +56,14 @@ export type GetCurrentUserResponse = Schema.Schema.Type<
 	typeof GetCurrentUserResponseSchema
 >;
 
-export type GetTopItemsRequest = {
-	/**
-	 * The type of entity to return
-	 */
-	type: "artists" | "tracks";
-};
+export const GetTopArtistsResponseSchema = PageSchema(ArtistSchema);
+export type GetTopArtistsResponse = Schema.Schema.Type<
+	typeof GetTopArtistsResponseSchema
+>;
 
-export const GetTopItemsResponseSchema = PageSchema(
-	Schema.Union(ArtistSchema, TrackSchema),
-);
-export type GetTopItemsResponse = Schema.Schema.Type<
-	typeof GetTopItemsResponseSchema
+export const GetTopTracksResponseSchema = PageSchema(TrackSchema);
+export type GetTopTracksResponse = Schema.Schema.Type<
+	typeof GetTopTracksResponseSchema
 >;
 
 export type GetUserProfileRequest = {
@@ -105,58 +101,60 @@ export type UserUnfollowPlaylistRequest = {
 	id: string;
 };
 
-export type GetFollowedArtistRequest = {
-	/**
-	 * The ID type
-	 *
-	 * @remarks
-	 * Currently only artist is supported
-	 */
-	type: "artist";
-};
-
 export const GetFollowedArtistResponseSchema = PagedSetSchema(ArtistSchema);
 export type GetFollowedArtistResponse = Schema.Schema.Type<
 	typeof GetFollowedArtistResponseSchema
 >;
 
-export type UserFollowRequest = {
+export type UserFollowArtistsRequest = {
 	/**
-	 * The ID type
-	 */
-	type: "artist" | "user";
-	/**
-	 * A list of the artist or the user Spotify IDs. Maximum: 50 IDs.
+	 * A list of the artist Spotify IDs. Maximum: 50 IDs.
 	 * @see {@link https://developer.spotify.com/documentation/web-api/concepts/spotify-uris-ids|Spotify IDs}
 	 */
 	ids: string[];
 };
 
-export type UserUnfollowRequest = {
+export type UserFollowUsersRequest = {
 	/**
-	 * The ID type
-	 */
-	type: "artist" | "user";
-	/**
-	 * A list of the artist or the user Spotify IDs. Maximum: 50 IDs.
+	 * A list of the user Spotify IDs. Maximum: 50 IDs.
 	 * @see {@link https://developer.spotify.com/documentation/web-api/concepts/spotify-uris-ids|Spotify IDs}
 	 */
 	ids: string[];
 };
 
-export type CheckUserFollowRequest = {
+export type UserUnfollowArtistsRequest = {
 	/**
-	 * The ID type
-	 */
-	type: "artist" | "user";
-	/**
-	 * A list of the artist or the user Spotify IDs. Maximum: 50 IDs.
+	 * A list of the artist Spotify IDs. Maximum: 50 IDs.
 	 * @see {@link https://developer.spotify.com/documentation/web-api/concepts/spotify-uris-ids|Spotify IDs}
 	 */
 	ids: string[];
 };
 
-export type CheckUserFollowPlaylistRequest = {
+export type UserUnfollowUsersRequest = {
+	/**
+	 * A list of the user Spotify IDs. Maximum: 50 IDs.
+	 * @see {@link https://developer.spotify.com/documentation/web-api/concepts/spotify-uris-ids|Spotify IDs}
+	 */
+	ids: string[];
+};
+
+export type IsFollowingArtistsRequest = {
+	/**
+	 * A list of the artist Spotify IDs. Maximum: 50 IDs.
+	 * @see {@link https://developer.spotify.com/documentation/web-api/concepts/spotify-uris-ids|Spotify IDs}
+	 */
+	ids: string[];
+};
+
+export type IsFollowingUsersRequest = {
+	/**
+	 * A list of the user Spotify IDs. Maximum: 50 IDs.
+	 * @see {@link https://developer.spotify.com/documentation/web-api/concepts/spotify-uris-ids|Spotify IDs}
+	 */
+	ids: string[];
+};
+
+export type IsFollowingPlaylistRequest = {
 	/**
 	 * The Spotify ID of the playlist
 	 * @see {@link https://developer.spotify.com/documentation/web-api/concepts/spotify-uris-ids|Spotify IDs}

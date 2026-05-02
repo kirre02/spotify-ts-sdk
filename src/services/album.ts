@@ -5,7 +5,6 @@ import type {
 	PaginatedMarketOptions,
 	PaginationOptions,
 } from "@internal/options";
-import { IllegalArgumentException } from "effect/Cause";
 import {
 	GetAlbumResponseSchema,
 	GetAlbumTracksResponseSchema,
@@ -26,6 +25,13 @@ import {
 } from "@internal/services/album";
 import type { ApiError } from "@errors/index";
 import type { AuthService } from "auth";
+import {
+	guardId,
+	guardIds,
+	guardLimit,
+	guardMarket,
+	guardOffset,
+} from "guards";
 
 export class AlbumService extends Context.Tag("AlbumService")<
 	AlbumService,
@@ -67,6 +73,10 @@ export const AlbumServiceLive = Layer.effect(
 			get: (request: GetAlbumRequest, options?: MarketOnlyOptions) => {
 				const { id } = request;
 
+				guardId(id, "[AlbumService/Get] Album id");
+				if (options?.market != null)
+					guardMarket(options.market, "[AlbumService/Get]");
+
 				return makeRequest({
 					route: `albums/${id.trim()}`,
 					schema: GetAlbumResponseSchema,
@@ -79,13 +89,12 @@ export const AlbumServiceLive = Layer.effect(
 			) => {
 				const { ids } = request;
 
-				if (ids.length > 20)
-					throw new IllegalArgumentException(
-						"Maximum 20 IDs allowed per request",
-					);
+				guardIds(ids, "[AlbumService/GetMany] Album ids", 20);
+				if (options?.market != null)
+					guardMarket(options.market, "[AlbumService/GetMany]");
 
 				const encodedIds = ids
-					.map((id) => id.trim())
+					.map((id) => encodeURIComponent(id.trim()))
 					.join(encodeURIComponent(","));
 
 				return makeRequest({
@@ -100,13 +109,13 @@ export const AlbumServiceLive = Layer.effect(
 			) => {
 				const { id } = request;
 
-				if (options?.limit !== undefined) {
-					if (options.limit < 0 || options.limit > 50) {
-						throw new IllegalArgumentException(
-							"Limit must be between 0 and 50",
-						);
-					}
-				}
+				guardId(id, "[AlbumService/GetTracks] Album id");
+				if (options?.limit != null)
+					guardLimit(options.limit, 50, "[AlbumService/GetTracks]");
+				if (options?.market != null)
+					guardMarket(options.market, "[AlbumService/GetTracks]");
+				if (options?.offset != null)
+					guardOffset(options.offset, "[AlbumService/GetTracks]");
 
 				return makeRequest({
 					route: `albums/${id.trim()}/tracks`,
@@ -115,13 +124,12 @@ export const AlbumServiceLive = Layer.effect(
 				});
 			},
 			getSaved: (options?: PaginatedMarketOptions) => {
-				if (options?.limit !== undefined) {
-					if (options.limit < 0 || options.limit > 50) {
-						throw new IllegalArgumentException(
-							"Limit must be between 0 and 50",
-						);
-					}
-				}
+				if (options?.limit != null)
+					guardLimit(options.limit, 50, "[AlbumService/GetSaved]");
+				if (options?.market != null)
+					guardMarket(options.market, "[AlbumService/GetSaved]");
+				if (options?.offset != null)
+					guardOffset(options.offset, "[AlbumService/GetSaved]");
 
 				return makeRequest({
 					route: "me/albums",
@@ -132,10 +140,7 @@ export const AlbumServiceLive = Layer.effect(
 			save: (request: SaveAlbumRequest) => {
 				const { ids } = request;
 
-				if (ids.length > 20)
-					throw new IllegalArgumentException(
-						"Maximum 20 IDs allowed per request",
-					);
+				guardIds(ids, "[AlbumService/Save] Album ids", 20);
 
 				const encodedIds = ids
 					.map((id) => id.trim())
@@ -150,10 +155,7 @@ export const AlbumServiceLive = Layer.effect(
 			remove: (request: RemoveAlbumRequest) => {
 				const { ids } = request;
 
-				if (ids.length > 20)
-					throw new IllegalArgumentException(
-						"Maximum 20 IDs allowed per request",
-					);
+				guardIds(ids, "[AlbumService/Remove] Album ids", 20);
 
 				const encodedIds = ids
 					.map((id) => id.trim())
@@ -168,10 +170,7 @@ export const AlbumServiceLive = Layer.effect(
 			checkSaved: (request: CheckSavedAlbumRequest) => {
 				const { ids } = request;
 
-				if (ids.length > 20)
-					throw new IllegalArgumentException(
-						"Maximum 20 IDs allowed per request",
-					);
+				guardIds(ids, "[AlbumService/CheckSaved] Album ids", 20);
 
 				const encodedIds = ids
 					.map((id) => id.trim())
@@ -183,13 +182,11 @@ export const AlbumServiceLive = Layer.effect(
 				});
 			},
 			getNewReleases: (options?: PaginationOptions) => {
-				if (options?.limit !== undefined) {
-					if (options.limit < 0 || options.limit > 50) {
-						throw new IllegalArgumentException(
-							"Limit must be between 0 and 50",
-						);
-					}
-				}
+				if (options?.limit != null)
+					guardLimit(options.limit, 50, "[AlbumService/GetNewReleases]");
+				if (options?.offset != null)
+					guardOffset(options.offset, "[AlbumService/GetNewReleases]");
+
 				return makeRequest({
 					route: `browse/new-releases`,
 					schema: GetNewReleasesResponseSchema,

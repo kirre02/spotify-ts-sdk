@@ -9,6 +9,13 @@ import {
 import type { ApiError } from "@errors/index";
 import type { AuthService } from "auth";
 import { IllegalArgumentException } from "effect/Cause";
+import {
+	guardArrays,
+	guardLimit,
+	guardMarket,
+	guardOffset,
+	guardString,
+} from "guards";
 
 export class SearchService extends Context.Tag("SearchService")<
 	SearchService,
@@ -27,13 +34,41 @@ export const SearchServiceLive = Layer.effect(
 			query: (request: SearchRequest, options?: MarketExternalOptions) => {
 				const { query, types } = request;
 
-				if (options?.limit !== undefined) {
-					if (options.limit < 0 || options.limit > 50) {
+				guardString(query, "[SearchService/Query] Query");
+				guardArrays(types, "[SearchService/Query] Types");
+				const validTypes = [
+					"album",
+					"artist",
+					"playlist",
+					"track",
+					"show",
+					"episode",
+					"audiobook",
+				];
+				if (types.some((type) => !validTypes.includes(type.trim())))
+					throw new IllegalArgumentException(
+						'[SearchService/Query] Types can only contain "album", "artist", "playlist", "track", "show", "episode" or "audiobook"',
+					);
+
+				if (options?.limit != null)
+					guardLimit(options.limit, 50, "[SearchService/Query]");
+				if (options?.offset != null)
+					guardOffset(options.offset, "[SearchService/Query]");
+				if (options?.limit != null && options.offset != null) {
+					if (options.limit + options.offset > 1000)
 						throw new IllegalArgumentException(
-							"Limit must be between 0 and 50",
+							"[SearchService/Query] Limit + Offset can not exceed 1000",
 						);
-					}
 				}
+				if (options?.market != null)
+					guardMarket(options.market, "[SearchService/Query]");
+				if (
+					options?.include_external != null &&
+					options.include_external !== "audio"
+				)
+					throw new IllegalArgumentException(
+						'[SearchService/Query] Include external is only allowed to be "audio"',
+					);
 
 				const encodedQuery = query.replaceAll(" ", encodeURIComponent(" "));
 

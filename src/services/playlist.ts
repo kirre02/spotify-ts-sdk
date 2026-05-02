@@ -38,6 +38,16 @@ import {
 } from "@internal/services/playlist";
 import type { ApiError } from "@errors/index";
 import type { AuthService } from "auth";
+import {
+	guardAdditionalTypes,
+	guardFields,
+	guardId,
+	guardLimit,
+	guardMarket,
+	guardOffset,
+	guardString,
+	guardUris,
+} from "guards";
 
 export class PlaylistService extends Context.Tag("PlaylistService")<
 	PlaylistService,
@@ -88,6 +98,17 @@ export const PlaylistServiceLive = Layer.effect(
 			get: (request: GetPlaylistRequest, options?: MarketFieldOptions) => {
 				const { id } = request;
 
+				guardId(id, "[PlaylistService/Get] Playlist id");
+				if (options?.market != null)
+					guardMarket(options.market, "[PlaylistService/Get]");
+				if (options?.additional_types != null)
+					guardAdditionalTypes(
+						options.additional_types,
+						"[PlaylistService/Get]",
+					);
+				if (options?.fields != null)
+					guardFields(options.fields, "[PlaylistService/Get]");
+
 				return makeRequest({
 					route: `playlists/${id.trim()}`,
 					schema: GetPlaylistResponseSchema,
@@ -95,12 +116,28 @@ export const PlaylistServiceLive = Layer.effect(
 				});
 			},
 			changeDetails: (request: ChangeDetailsRequest) => {
-				const { playlistId, name, isPublic, collaborative, description } =
-					request;
+				const { id, name, isPublic, collaborative, description } = request;
+
+				guardId(id, "[PlaylistService/ChangeDetails] Playlist id");
+				if (name != null)
+					guardString(name, "[PlaylistService/ChangeDetails] Name");
+				if (isPublic != null && typeof isPublic !== "boolean")
+					throw new IllegalArgumentException(
+						"[PlaylistService/ChangeDetails] isPublic must be a boolean",
+					);
+				if (collaborative != null && typeof collaborative !== "boolean")
+					throw new IllegalArgumentException(
+						"[PlaylistService/ChangeDetails] Collaborative must be a boolean",
+					);
+				if (description != null)
+					guardString(
+						description,
+						"[PlaylistService/ChangeDetails] Description",
+					);
 
 				return makeRequest({
 					method: "PUT",
-					route: `playlists/${playlistId.trim()}`,
+					route: `playlists/${id.trim()}`,
 					schema: Schema.Void,
 					body: JSON.stringify({
 						name,
@@ -116,13 +153,20 @@ export const PlaylistServiceLive = Layer.effect(
 			) => {
 				const { id } = request;
 
-				if (options?.limit !== undefined) {
-					if (options.limit < 0 || options.limit > 50) {
-						throw new IllegalArgumentException(
-							"Limit must be between 0 and 50",
-						);
-					}
-				}
+				guardId(id, "[PlaylistService/GetItems] Playlist id");
+				if (options?.market != null)
+					guardMarket(options.market, "[PlaylistService/GetItems]");
+				if (options?.fields != null)
+					guardFields(options.fields, "[PlaylistService/GetItems]");
+				if (options?.limit != null)
+					guardLimit(options.limit, 50, "[PlaylistService/GetItems]");
+				if (options?.offset != null)
+					guardOffset(options.offset, "[PlaylistService/GetItems]");
+				if (options?.additional_types != null)
+					guardAdditionalTypes(
+						options.additional_types,
+						"[PlaylistService/GetItems]",
+					);
 
 				return makeRequest({
 					route: `playlists/${id.trim()}/tracks`,
@@ -131,18 +175,41 @@ export const PlaylistServiceLive = Layer.effect(
 				});
 			},
 			updateItems: (request: UpdatePlaylistItemRequest) => {
-				const {
-					playlistId,
-					uris,
-					rangeStart,
-					insertBefore,
-					rangeLength,
-					snapshotId,
-				} = request;
+				const { id, uris, rangeStart, insertBefore, rangeLength, snapshotId } =
+					request;
+
+				guardId(id, "[PlaylistService/UpdateItems] Playlist id");
+				if (uris != null) {
+					if (uris.length < 1 || uris.length > 100)
+						throw new IllegalArgumentException(
+							"[PlaylistService/UpdateItems] Uris must contain between 1 & 100 items",
+						);
+					guardUris(uris, "[PlaylistService/UpdateItems] Uris");
+				}
+				if (rangeStart != null) {
+					if (!Number.isInteger(rangeStart))
+						throw new IllegalArgumentException(
+							"[PlaylistService/UpdateItems] Range start must be an integer",
+						);
+				}
+				if (insertBefore != null) {
+					if (!Number.isInteger(insertBefore))
+						throw new IllegalArgumentException(
+							"[PlaylistService/UpdateItems] Insert before must be an integer",
+						);
+				}
+				if (rangeLength != null) {
+					if (!Number.isInteger(rangeLength))
+						throw new IllegalArgumentException(
+							"[PlaylistService/UpdateItems] Range length must be an integer",
+						);
+				}
+				if (snapshotId != null)
+					guardString(snapshotId, "[PlaylistService/UpdateItems] Snapshot id");
 
 				return makeRequest({
 					method: "PUT",
-					route: `playlists/${playlistId.trim()}/tracks`,
+					route: `playlists/${id.trim()}/tracks`,
 					schema: UpdatePlaylistItemResponseSchema,
 					body: JSON.stringify({
 						uris,
@@ -154,11 +221,36 @@ export const PlaylistServiceLive = Layer.effect(
 				});
 			},
 			add: (request: AddPlaylistItemRequest) => {
-				const { playlistId, position, uris } = request;
+				const { id, position, uris } = request;
+
+				guardId(id, "[PlaylistService/Add] Playlist id");
+				if (position != null) {
+					if (!Number.isInteger(position))
+						throw new IllegalArgumentException(
+							"[PlaylistService/Add] Position must be an integer",
+						);
+				}
+				if (uris != null) {
+					if (uris.length > 100)
+						throw new IllegalArgumentException(
+							"[PlaylistService/Add] Uris can contain a maximum of 100 items",
+						);
+					guardUris(uris, "[PlaylistService/Add] Uris");
+					if (
+						uris.some(
+							(uri) =>
+								!uri.startsWith("spotify:track") &&
+								!uri.startsWith("spotify:episode"),
+						)
+					)
+						throw new IllegalArgumentException(
+							"[PlaylistService/Add] Uris must either be of type track or episode",
+						);
+				}
 
 				return makeRequest({
 					method: "POST",
-					route: `playlists/${playlistId}/tracks`,
+					route: `playlists/${id.trim()}/tracks`,
 					schema: AddPlaylistItemResponseSchema,
 					body: JSON.stringify({
 						position,
@@ -167,17 +259,37 @@ export const PlaylistServiceLive = Layer.effect(
 				});
 			},
 			remove: (request: RemovePlaylistItemRequest) => {
-				const { playlistId, tracks, snapshotId } = request;
+				const { id, tracks, snapshotId } = request;
 
-				if (tracks?.length > 100) {
+				guardId(id, "[PlaylistService/Remove] Playlist id");
+				if (tracks == null)
 					throw new IllegalArgumentException(
-						"Maximum 100 objects allowed per request",
+						"[PlaylistService/Remove] Tracks must be provided",
 					);
-				}
+				if (tracks.length > 100)
+					throw new IllegalArgumentException(
+						"[PlaylistService/Remove] Tracks can contain a maximum of 100 items",
+					);
+				guardUris(
+					tracks.map((track) => track.uri),
+					"[PlaylistService/Remove] Tracks",
+				);
+				if (
+					tracks.some(
+						(track) =>
+							!track.uri.startsWith("spotify:track") &&
+							!track.uri.startsWith("spotify:episode"),
+					)
+				)
+					throw new IllegalArgumentException(
+						"[PlaylistService/Remove] Tracks must either be of type track or episode",
+					);
+				if (snapshotId != null)
+					guardString(snapshotId, "[PlaylistService/Remove] Snapshot id");
 
 				return makeRequest({
 					method: "DELETE",
-					route: `playlists/${playlistId.trim()}/tracks`,
+					route: `playlists/${id.trim()}/tracks`,
 					schema: RemovePlaylistItemResponseSchema,
 					body: JSON.stringify({
 						tracks,
@@ -186,13 +298,10 @@ export const PlaylistServiceLive = Layer.effect(
 				});
 			},
 			getPlaylists: (options?: PaginationOptions) => {
-				if (options?.limit !== undefined) {
-					if (options.limit < 0 || options.limit > 50) {
-						throw new IllegalArgumentException(
-							"Limit must be between 0 and 50",
-						);
-					}
-				}
+				if (options?.limit != null)
+					guardLimit(options.limit, 50, "[PlaylistService/GetPlaylists]");
+				if (options?.offset != null)
+					guardOffset(options.offset, "[PlaylistService/GetPlaylists]");
 
 				return makeRequest({
 					route: "me/playlists",
@@ -206,13 +315,11 @@ export const PlaylistServiceLive = Layer.effect(
 			) => {
 				const { id } = request;
 
-				if (options?.limit !== undefined) {
-					if (options.limit < 0 || options.limit > 50) {
-						throw new IllegalArgumentException(
-							"Limit must be between 0 and 50",
-						);
-					}
-				}
+				guardId(id, "[PlaylistService/GetUsersPlaylists] User id");
+				if (options?.limit != null)
+					guardLimit(options.limit, 50, "[PlaylistService/GetUsersPlaylists]");
+				if (options?.offset != null)
+					guardOffset(options.offset, "[PlaylistService/GetUsersPlaylists]");
 
 				return makeRequest({
 					route: `users/${id.trim()}/playlists`,
@@ -221,11 +328,23 @@ export const PlaylistServiceLive = Layer.effect(
 				});
 			},
 			create: (request: CreatePlaylistRequest) => {
-				const { userId, name, isPublic, collaborative, description } = request;
+				const { name, isPublic, collaborative, description } = request;
+
+				guardString(name, "[PlaylistService/Create] Playlist name");
+				if (isPublic != null && typeof isPublic !== "boolean")
+					throw new IllegalArgumentException(
+						"[PlaylistService/Create] isPublic must be a boolean",
+					);
+				if (collaborative != null && typeof collaborative !== "boolean")
+					throw new IllegalArgumentException(
+						"[PlaylistService/Create] Collaborative must be a boolean",
+					);
+				if (description != null)
+					guardString(description, "[PlaylistService/Create] Description");
 
 				return makeRequest({
 					method: "POST",
-					route: `users/${userId}/playlists`,
+					route: "me/playlists",
 					schema: CreatePlaylistResponseSchema,
 					body: JSON.stringify({
 						name,
@@ -238,6 +357,8 @@ export const PlaylistServiceLive = Layer.effect(
 			getCoverImage: (request: GetPlaylistCoverImageRequest) => {
 				const { id } = request;
 
+				guardId(id, "[PlaylistService/GetCoverImage] Playlist id");
+
 				return makeRequest({
 					route: `playlists/${id.trim()}/images`,
 					schema: GetPlaylistCoverImageResponseSchema,
@@ -245,6 +366,9 @@ export const PlaylistServiceLive = Layer.effect(
 			},
 			addCustomCoverImage: (request: AddPlaylistCoverImageRequest) => {
 				const { id, image } = request;
+
+				guardId(id, "[PlaylistService/AddCustomCoverImage] Playlist id");
+				guardString(image, "[PlaylistService/AddCustomCoverImage]");
 
 				return makeRequest({
 					method: "PUT",

@@ -4,7 +4,6 @@ import type {
 	MarketOnlyOptions,
 	PaginatedMarketOptions,
 } from "@internal/options";
-import { IllegalArgumentException } from "effect/Cause";
 import {
 	type GetEpisodeRequest,
 	type GetEpisodeResponse,
@@ -20,6 +19,13 @@ import {
 } from "@internal/services/episode";
 import type { ApiError } from "@errors/index";
 import type { AuthService } from "auth";
+import {
+	guardId,
+	guardIds,
+	guardLimit,
+	guardMarket,
+	guardOffset,
+} from "guards";
 
 export class EpisodeService extends Context.Tag("EpisodeService")<
 	EpisodeService,
@@ -54,6 +60,10 @@ export const EpisodeServiceLive = Layer.effect(
 			get: (request: GetEpisodeRequest, options?: MarketOnlyOptions) => {
 				const { id } = request;
 
+				guardId(id, "[EpisodeService/Get] Episode id");
+				if (options?.market != null)
+					guardMarket(options.market, "[EpisodeService/Get]");
+
 				return makeRequest({
 					route: `episodes/${id.trim()}`,
 					schema: GetEpisodeResponseSchema,
@@ -66,10 +76,9 @@ export const EpisodeServiceLive = Layer.effect(
 			) => {
 				const { ids } = request;
 
-				if (ids.length > 50)
-					throw new IllegalArgumentException(
-						"Maximum 50 IDs allowed per request",
-					);
+				guardIds(ids, "[EpisodeService/GetMany] Episode ids", 50);
+				if (options?.market != null)
+					guardMarket(options.market, "[EpisodeService/GetMany]");
 
 				const encodedIds = ids
 					.map((id) => id.trim())
@@ -82,13 +91,12 @@ export const EpisodeServiceLive = Layer.effect(
 				});
 			},
 			getSaved: (options?: PaginatedMarketOptions) => {
-				if (options?.limit !== undefined) {
-					if (options.limit < 0 || options.limit > 50) {
-						throw new IllegalArgumentException(
-							"Limit must be between 0 and 50",
-						);
-					}
-				}
+				if (options?.market != null)
+					guardMarket(options.market, "[EpisodeService/GetSaved]");
+				if (options?.limit != null)
+					guardLimit(options.limit, 50, "[EpisodeService/GetSaved]");
+				if (options?.offset != null)
+					guardOffset(options.offset, "[EpisodeService/GetSaved]");
 
 				return makeRequest({
 					route: "me/episodes",
@@ -99,10 +107,7 @@ export const EpisodeServiceLive = Layer.effect(
 			save: (request: SaveEpisodeRequest) => {
 				const { ids } = request;
 
-				if (ids.length > 50)
-					throw new IllegalArgumentException(
-						"Maximum 50 IDs allowed per request",
-					);
+				guardIds(ids, "[EpisodeService/Save] Episode ids", 50);
 
 				const encodedIds = ids
 					.map((id) => id.trim())
@@ -117,10 +122,7 @@ export const EpisodeServiceLive = Layer.effect(
 			remove: (request: RemoveEpisodeRequest) => {
 				const { ids } = request;
 
-				if (ids.length > 50)
-					throw new IllegalArgumentException(
-						"Maximum 50 IDs allowed per request",
-					);
+				guardIds(ids, "[EpisodeService/Remove] Episode ids", 50);
 
 				const encodedIds = ids
 					.map((id) => id.trim())
@@ -135,10 +137,7 @@ export const EpisodeServiceLive = Layer.effect(
 			checkSaved: (request: CheckSavedEpisodeRequest) => {
 				const { ids } = request;
 
-				if (ids.length > 50)
-					throw new IllegalArgumentException(
-						"Maximum 50 IDs allowed per request",
-					);
+				guardIds(ids, "[EpisodeService/CheckSaved] Episode ids", 50);
 
 				const encodedIds = ids
 					.map((id) => id.trim())

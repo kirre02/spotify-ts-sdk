@@ -72,9 +72,20 @@ export type GetSavedTrackResponse = Schema.Schema.Type<
 export type SaveTrackRequest = {
 	/**
 	 * A list of the Spotify IDs for the tracks. Maximum: 50 IDs.
+	 * If `timestamped_ids` is present any IDs listed in this field will be ignored
 	 * @see {@link https://developer.spotify.com/documentation/web-api/concepts/spotify-uris-ids|Spotify IDs}
 	 */
-	ids: string[];
+	ids?: string[];
+	/**
+	 * A list of objects containing track IDs with their corresponding timestamps.
+	 * Each object must include a track ID and an added_at timestamp.
+	 * This allows you to specify when tracks were added to maintain a specific chronological order.
+	 * Maximum: 50 IDs. If this field is used any IDs present in the `ids` field will be ignored.
+	 */
+	timestamped_ids?: {
+		id: string;
+		added_at: string;
+	}[];
 };
 
 export type RemoveTrackRequest = {

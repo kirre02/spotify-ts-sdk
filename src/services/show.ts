@@ -1,5 +1,4 @@
 import { Context, Effect, Layer, Schema } from "effect";
-import { IllegalArgumentException } from "effect/Cause";
 import { makeRequest } from "@core/client";
 import type {
 	MarketOnlyOptions,
@@ -24,6 +23,13 @@ import {
 } from "@internal/services/show";
 import type { ApiError } from "@errors/index";
 import type { AuthService } from "auth";
+import {
+	guardId,
+	guardIds,
+	guardLimit,
+	guardMarket,
+	guardOffset,
+} from "guards";
 
 export class ShowService extends Context.Tag("ShowService")<
 	ShowService,
@@ -48,6 +54,7 @@ export class ShowService extends Context.Tag("ShowService")<
 		) => Effect.Effect<void, ApiError, AuthService>;
 		readonly remove: (
 			request: RemoveShowRequest,
+			options?: MarketOnlyOptions,
 		) => Effect.Effect<void, ApiError, AuthService>;
 		readonly checkSaved: (
 			request: CheckSavedShowRequest,
@@ -62,6 +69,10 @@ export const ShowServiceLive = Layer.effect(
 			get: (request: GetShowRequest, options?: MarketOnlyOptions) => {
 				const { id } = request;
 
+				guardId(id, "[ShowService/Get] Show id");
+				if (options?.market != null)
+					guardMarket(options.market, "[ShowService/Get]");
+
 				return makeRequest({
 					route: `shows/${id.trim()}`,
 					schema: GetShowResponseSchema,
@@ -74,17 +85,16 @@ export const ShowServiceLive = Layer.effect(
 			) => {
 				const { ids } = request;
 
-				if (ids.length > 50)
-					throw new IllegalArgumentException(
-						"Maximum 50 IDs allowed per request",
-					);
+				guardIds(ids, "[ShowService/GetMany] Show ids", 50);
+				if (options?.market != null)
+					guardMarket(options.market, "[ShowService/GetMany]");
 
 				const encodedIds = ids
 					.map((id) => id.trim())
 					.join(encodeURIComponent(","));
 
 				return makeRequest({
-					route: `shows?${encodedIds}`,
+					route: `shows?ids=${encodedIds}`,
 					schema: GetSeveralShowResponseSchema,
 					options,
 				});
@@ -95,13 +105,13 @@ export const ShowServiceLive = Layer.effect(
 			) => {
 				const { id } = request;
 
-				if (options?.limit !== undefined) {
-					if (options.limit < 0 || options.limit > 50) {
-						throw new IllegalArgumentException(
-							"Limit must be between 0 and 50",
-						);
-					}
-				}
+				guardId(id, "[ShowService/GetEpisodes] Show id");
+				if (options?.market != null)
+					guardMarket(options.market, "[ShowService/GetEpisodes]");
+				if (options?.limit != null)
+					guardLimit(options.limit, 50, "[ShowService/GetEpisodes]");
+				if (options?.offset != null)
+					guardOffset(options.offset, "[ShowService/GetEpisodes]");
 
 				return makeRequest({
 					route: `shows/${id.trim()}/episodes`,
@@ -110,13 +120,10 @@ export const ShowServiceLive = Layer.effect(
 				});
 			},
 			getSaved: (options?: PaginationOptions) => {
-				if (options?.limit !== undefined) {
-					if (options.limit < 0 || options.limit > 50) {
-						throw new IllegalArgumentException(
-							"Limit must be between 0 and 50",
-						);
-					}
-				}
+				if (options?.limit != null)
+					guardLimit(options.limit, 50, "[ShowService/GetSaved]");
+				if (options?.offset != null)
+					guardOffset(options.offset, "[ShowService/GetSaved]");
 
 				return makeRequest({
 					route: "me/shows",
@@ -127,10 +134,7 @@ export const ShowServiceLive = Layer.effect(
 			save: (request: SaveShowRequest) => {
 				const { ids } = request;
 
-				if (ids.length > 50)
-					throw new IllegalArgumentException(
-						"Maximum 50 IDs allowed per request",
-					);
+				guardIds(ids, "[ShowService/Save] Show ids", 50);
 
 				const encodedIds = ids
 					.map((id) => id.trim())
@@ -142,13 +146,12 @@ export const ShowServiceLive = Layer.effect(
 					schema: Schema.Void,
 				});
 			},
-			remove: (request: RemoveShowRequest) => {
+			remove: (request: RemoveShowRequest, options?: MarketOnlyOptions) => {
 				const { ids } = request;
 
-				if (ids.length > 50)
-					throw new IllegalArgumentException(
-						"Maximum 50 IDs allowed per request",
-					);
+				guardIds(ids, "[ShowService/Remove] Show ids", 50);
+				if (options?.market != null)
+					guardMarket(options.market, "[ShowService/Remove]");
 
 				const encodedIds = ids
 					.map((id) => id.trim())
@@ -163,17 +166,14 @@ export const ShowServiceLive = Layer.effect(
 			checkSaved: (request: CheckSavedShowRequest) => {
 				const { ids } = request;
 
-				if (ids.length > 50)
-					throw new IllegalArgumentException(
-						"Maximum 50 IDs allowed per request",
-					);
+				guardIds(ids, "[ShowService/CheckSaved] Show ids", 50);
 
 				const encodedIds = ids
 					.map((id) => id.trim())
 					.join(encodeURIComponent(","));
 
 				return makeRequest({
-					route: `me/shows/contains?${encodedIds}`,
+					route: `me/shows/contains?ids=${encodedIds}`,
 					schema: Schema.Array(Schema.Boolean),
 				});
 			},

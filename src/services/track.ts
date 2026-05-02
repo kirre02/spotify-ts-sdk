@@ -20,6 +20,14 @@ import {
 } from "@internal/services/track";
 import type { ApiError } from "@errors/index";
 import type { AuthService } from "auth";
+import {
+	guardId,
+	guardIds,
+	guardLimit,
+	guardMarket,
+	guardOffset,
+	guardTimestampedIds,
+} from "guards";
 
 export class TrackService extends Context.Tag("TrackService")<
 	TrackService,
@@ -54,6 +62,10 @@ export const TrackServiceLive = Layer.effect(
 			get: (request: GetTrackRequest, options?: MarketOnlyOptions) => {
 				const { id } = request;
 
+				guardId(id, "[TrackService/Get] Track id");
+				if (options?.market != null)
+					guardMarket(options.market, "[TrackService/Get]");
+
 				return makeRequest({
 					route: `tracks/${id.trim()}`,
 					schema: GetTrackResponseSchema,
@@ -66,10 +78,9 @@ export const TrackServiceLive = Layer.effect(
 			) => {
 				const { ids } = request;
 
-				if (ids.length > 50)
-					throw new IllegalArgumentException(
-						"Maximum 50 IDs allowed per request",
-					);
+				guardIds(ids, "[TrackService/GetMany] Track ids", 50);
+				if (options?.market != null)
+					guardMarket(options.market, "[TrackService/GetMany]");
 
 				const encodedIds = ids
 					.map((id) => id.trim())
@@ -82,13 +93,12 @@ export const TrackServiceLive = Layer.effect(
 				});
 			},
 			getSaved: (options?: PaginatedMarketOptions) => {
-				if (options?.limit !== undefined) {
-					if (options.limit < 0 || options.limit > 50) {
-						throw new IllegalArgumentException(
-							"Limit must be between 0 and 50",
-						);
-					}
-				}
+				if (options?.market != null)
+					guardMarket(options.market, "[TrackService/GetSaved]");
+				if (options?.limit != null)
+					guardLimit(options.limit, 50, "[TrackService/GetSaved]");
+				if (options?.offset != null)
+					guardOffset(options.offset, "[TrackService/GetSaved]");
 
 				return makeRequest({
 					route: "me/tracks",
@@ -97,30 +107,50 @@ export const TrackServiceLive = Layer.effect(
 				});
 			},
 			save: (request: SaveTrackRequest) => {
-				const { ids } = request;
+				const { ids, timestamped_ids } = request;
 
-				if (ids.length > 50)
+				let body: string[] | { id: string; added_at: string }[] = [];
+
+				if (ids != null && timestamped_ids != null)
 					throw new IllegalArgumentException(
-						"Maximum 50 IDs allowed per request",
+						"[TrackService/Save] Only one of ids and timestamped_ids can be provided",
 					);
-
-				const encodedIds = ids
-					.map((id) => id.trim())
-					.join(encodeURIComponent(","));
+				if (ids != null) {
+					guardIds(ids, "[TrackService/Save] Track ids", 50);
+					body = ids.map((id) => id.trim());
+				} else if (timestamped_ids != null) {
+					guardTimestampedIds(
+						timestamped_ids,
+						"[TrackService/Save] Timestamped ids",
+						50,
+					);
+					body = timestamped_ids.map((id) => ({
+						id: id.id.trim(),
+						added_at: id.added_at.trim(),
+					}));
+				} else {
+					throw new IllegalArgumentException(
+						"[TrackService/Save] One of ids and timestamped_ids must be provided",
+					);
+				}
 
 				return makeRequest({
 					method: "PUT",
-					route: `me/tracks?ids=${encodedIds}`,
+					route: "me/tracks",
 					schema: Schema.Void,
+					body: JSON.stringify(
+						ids != null
+							? { ids: body }
+							: {
+									timestamped_ids: body,
+								},
+					),
 				});
 			},
 			remove: (request: RemoveTrackRequest) => {
 				const { ids } = request;
 
-				if (ids.length > 50)
-					throw new IllegalArgumentException(
-						"Maximum 50 IDs allowed per request",
-					);
+				guardIds(ids, "[TrackService/Remove] Track ids", 50);
 
 				const encodedIds = ids
 					.map((id) => id.trim())
@@ -135,17 +165,14 @@ export const TrackServiceLive = Layer.effect(
 			checkSaved: (request: CheckSavedTrackRequest) => {
 				const { ids } = request;
 
-				if (ids.length > 50)
-					throw new IllegalArgumentException(
-						"Maximum 50 IDs allowed per request",
-					);
+				guardIds(ids, "[TrackService/CheckSaved] Track ids", 50);
 
 				const encodedIds = ids
 					.map((id) => id.trim())
 					.join(encodeURIComponent(","));
 
 				return makeRequest({
-					route: `me/tracks/contains?${encodedIds}`,
+					route: `me/tracks/contains?ids=${encodedIds}`,
 					schema: Schema.Array(Schema.Boolean),
 				});
 			},

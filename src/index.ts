@@ -37,6 +37,7 @@ import type {
 	MarketOnlyOptions,
 	PaginatedMarketOptions,
 	PaginationOptions,
+	Scopes,
 	TimeRangePaginationOptions,
 } from "@internal/options";
 import type {
@@ -86,15 +87,16 @@ import type {
 	TransferPlaybackRequest,
 } from "@internal/services/player";
 import type {
-	CheckUserFollowPlaylistRequest,
-	CheckUserFollowRequest,
-	GetFollowedArtistRequest,
-	GetTopItemsRequest,
 	GetUserProfileRequest,
+	IsFollowingArtistsRequest,
+	IsFollowingPlaylistRequest,
+	IsFollowingUsersRequest,
+	UserFollowArtistsRequest,
 	UserFollowPlaylistRequest,
-	UserFollowRequest,
+	UserFollowUsersRequest,
+	UserUnfollowArtistsRequest,
 	UserUnfollowPlaylistRequest,
-	UserUnfollowRequest,
+	UserUnfollowUsersRequest,
 } from "@internal/services/user";
 import type {
 	CheckSavedShowRequest,
@@ -681,11 +683,11 @@ class BetterMusicClient {
 						return yield* s.save(request);
 					}),
 				),
-			remove: (request: RemoveShowRequest) =>
+			remove: (request: RemoveShowRequest, options?: MarketOnlyOptions) =>
 				this.run(
 					Effect.gen(function* () {
 						const s = yield* ShowService;
-						return yield* s.remove(request);
+						return yield* s.remove(request, options);
 					}),
 				),
 			checkSaved: (request: CheckSavedShowRequest) =>
@@ -752,14 +754,18 @@ class BetterMusicClient {
 						return yield* s.getCurrentUser();
 					}),
 				),
-			getTopItems: (
-				request: GetTopItemsRequest,
-				options?: TimeRangePaginationOptions,
-			) =>
+			getTopArtists: (options?: TimeRangePaginationOptions) =>
 				this.run(
 					Effect.gen(function* () {
 						const s = yield* UserService;
-						return yield* s.getTopItems(request, options);
+						return yield* s.getTopArtists(options);
+					}),
+				),
+			getTopTracks: (options?: TimeRangePaginationOptions) =>
+				this.run(
+					Effect.gen(function* () {
+						const s = yield* UserService;
+						return yield* s.getTopTracks(options);
 					}),
 				),
 			getUser: (request: GetUserProfileRequest) =>
@@ -783,38 +789,56 @@ class BetterMusicClient {
 						return yield* s.unfollowPlaylist(request);
 					}),
 				),
-			getFollowedArtists: (
-				request: GetFollowedArtistRequest,
-				options?: AfterBasedPaginationOptions,
-			) =>
+			getFollowedArtists: (options?: AfterBasedPaginationOptions) =>
 				this.run(
 					Effect.gen(function* () {
 						const s = yield* UserService;
-						return yield* s.getFollowedArtists(request, options);
+						return yield* s.getFollowedArtists(options);
 					}),
 				),
-			follow: (request: UserFollowRequest) =>
+			followArtists: (request: UserFollowArtistsRequest) =>
 				this.run(
 					Effect.gen(function* () {
 						const s = yield* UserService;
-						return yield* s.follow(request);
+						return yield* s.followArtists(request);
 					}),
 				),
-			unfollow: (request: UserUnfollowRequest) =>
+			followUsers: (request: UserFollowUsersRequest) =>
 				this.run(
 					Effect.gen(function* () {
 						const s = yield* UserService;
-						return yield* s.unfollow(request);
+						return yield* s.followUsers(request);
 					}),
 				),
-			checkFollowed: (request: CheckUserFollowRequest) =>
+			unfollowArtists: (request: UserUnfollowArtistsRequest) =>
 				this.run(
 					Effect.gen(function* () {
 						const s = yield* UserService;
-						return yield* s.checkFollowed(request);
+						return yield* s.unfollowArtists(request);
 					}),
 				),
-			isFollowingPlaylist: (request: CheckUserFollowPlaylistRequest) =>
+			unfollowUsers: (request: UserUnfollowUsersRequest) =>
+				this.run(
+					Effect.gen(function* () {
+						const s = yield* UserService;
+						return yield* s.unfollowUsers(request);
+					}),
+				),
+			isFollowingArtists: (request: IsFollowingArtistsRequest) =>
+				this.run(
+					Effect.gen(function* () {
+						const s = yield* UserService;
+						return yield* s.isFollowingArtists(request);
+					}),
+				),
+			isFollowingUsers: (request: IsFollowingUsersRequest) =>
+				this.run(
+					Effect.gen(function* () {
+						const s = yield* UserService;
+						return yield* s.isFollowingUsers(request);
+					}),
+				),
+			isFollowingPlaylist: (request: IsFollowingPlaylistRequest) =>
 				this.run(
 					Effect.gen(function* () {
 						const s = yield* UserService;
@@ -829,7 +853,8 @@ export const BetterMusic = {
 	withClientCredentials(adapter: StorageAdapter) {
 		return new BetterMusicClient(makeClientCredentialsAuth(adapter));
 	},
-	withPKCE(adapter: StorageAdapter, scopes: string[]) {
+	withPKCE(adapter: StorageAdapter, scopes: Scopes[]) {
+		scopes = [...new Set(scopes)];
 		const layer = makePKCEAuth(adapter, scopes);
 		const runtime = ManagedRuntime.make(layer);
 

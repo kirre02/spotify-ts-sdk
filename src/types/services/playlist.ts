@@ -60,7 +60,7 @@ export type ChangeDetailsRequest = {
 	 * The Spotify ID of the playlist
 	 * @see {@link https://developer.spotify.com/documentation/web-api/concepts/playlists|Working with Playlists}
 	 */
-	playlistId: string;
+	id: string;
 	/**
 	 * The new name for the playlist, for example "My New Playlist Title"
 	 */
@@ -100,7 +100,7 @@ export type UpdatePlaylistItemRequest = {
 	 * The Spotify ID of the playlist
 	 * @see {@link https://developer.spotify.com/documentation/web-api/concepts/spotify-uris-ids|Spotify IDs}
 	 */
-	playlistId: string;
+	id: string;
 	/**
 	 * A list of Spotify URIs to set, can be track or episode URIs.
 	 * A maximum of 100 items can be set in one request
@@ -141,7 +141,7 @@ export type AddPlaylistItemRequest = {
 	 * The Spotify ID of the playlist
 	 * @see {@link https://developer.spotify.com/documentation/web-api/concepts/spotify-uris-ids|Spotify IDs}
 	 */
-	playlistId: string;
+	id: string;
 	/**
 	 * The position to insert the items, a zero-based index.
 	 *
@@ -170,7 +170,7 @@ export type RemovePlaylistItemRequest = {
 	 * The Spotify ID of the playlist
 	 * @see {@link https://developer.spotify.com/documentation/web-api/concepts/spotify-uris-ids|Spotify IDs}
 	 */
-	playlistId: string;
+	id: string;
 	/**
 	 * An array of objects containing Spotify URIs of the tracks or episodes to remove.
 	 * @remarks
@@ -213,11 +213,6 @@ export type GetUserPlaylistResponse = Schema.Schema.Type<
 >;
 
 export type CreatePlaylistRequest = {
-	/**
-	 * The user's Spotify user ID
-	 * @see {@link https://developer.spotify.com/documentation/web-api/concepts/spotify-uris-ids|Spotify IDs}
-	 */
-	userId: string;
 	/**
 	 * The name for the new playlist
 	 * @remarks
