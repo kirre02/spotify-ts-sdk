@@ -1,6 +1,6 @@
-import { PageSchema, SimplifiedShowSchema } from "@internal/shared";
+import { PageSchema, SimplifiedShowSchema } from "@schemas/shared";
 import { Schema } from "effect";
-import { SimplifiedEpisodeSchema } from "./episode";
+import { SimplifiedEpisodeSchema } from "@schemas/services/episode";
 
 export const ShowSchema = Schema.Struct({
 	...SimplifiedShowSchema.fields,

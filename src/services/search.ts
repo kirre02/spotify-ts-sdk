@@ -1,13 +1,13 @@
 import { Context, Effect, Layer } from "effect";
-import { makeRequest } from "@core/client";
-import type { MarketExternalOptions } from "@internal/options";
+import { makeRequest } from "@transporter";
+import type { MarketExternalOptions } from "@schemas/options";
 import {
 	type SearchRequest,
 	type SearchResponse,
 	SearchResponseSchema,
-} from "@internal/services/search";
-import type { ApiError } from "@errors/index";
-import type { AuthService } from "auth";
+} from "@schemas/services/search";
+import type { ApiError } from "@errors";
+import type { AuthService } from "@auth/index";
 import { IllegalArgumentException } from "effect/Cause";
 import {
 	guardArrays,
@@ -15,7 +15,7 @@ import {
 	guardMarket,
 	guardOffset,
 	guardString,
-} from "guards";
+} from "@guards";
 
 export class SearchService extends Context.Tag("SearchService")<
 	SearchService,

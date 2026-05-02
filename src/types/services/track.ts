@@ -6,7 +6,7 @@ import {
 	SimplifiedArtistSchema,
 	SimplifiedAlbumSchema,
 	PageSchema,
-} from "@internal/shared";
+} from "@schemas/shared";
 
 export const SimplifiedTrackSchema = Schema.Struct({
 	artists: Schema.Array(SimplifiedArtistSchema),

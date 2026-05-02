@@ -1,10 +1,10 @@
 import { Context, Effect, Layer, Schema } from "effect";
-import { makeRequest } from "@core/client";
+import { makeRequest } from "@transporter";
 import type {
 	MarketOnlyOptions,
 	PaginatedMarketOptions,
 	PaginationOptions,
-} from "@internal/options";
+} from "@schemas/options";
 import {
 	GetAudiobookChapterResponseSchema,
 	GetAudiobookResponseSchema,
@@ -20,16 +20,16 @@ import {
 	type GetSeveralAudiobookResponse,
 	type RemoveAudiobookRequest,
 	type SaveAudiobookRequest,
-} from "@internal/services/audiobook";
-import type { ApiError } from "@errors/index";
-import type { AuthService } from "auth";
+} from "@schemas/services/audiobook";
+import type { ApiError } from "@errors";
+import type { AuthService } from "@auth/index";
 import {
 	guardId,
 	guardIds,
 	guardLimit,
 	guardMarket,
 	guardOffset,
-} from "guards";
+} from "@guards";
 
 export class AudiobookService extends Context.Tag("AudiobookService")<
 	AudiobookService,

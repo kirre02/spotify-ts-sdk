@@ -1,10 +1,10 @@
 import { Context, Effect, Layer, Schema } from "effect";
 import { IllegalArgumentException } from "effect/Cause";
-import { makeRequest } from "@core/client";
+import { makeRequest } from "@transporter";
 import type {
 	MarketOnlyOptions,
 	PaginatedMarketOptions,
-} from "@internal/options";
+} from "@schemas/options";
 import {
 	GetSavedTrackResponseSchema,
 	GetSeveralTrackResponseSchema,
@@ -17,9 +17,9 @@ import {
 	type GetTrackResponse,
 	type RemoveTrackRequest,
 	type SaveTrackRequest,
-} from "@internal/services/track";
-import type { ApiError } from "@errors/index";
-import type { AuthService } from "auth";
+} from "@schemas/services/track";
+import type { ApiError } from "@errors";
+import type { AuthService } from "@auth/index";
 import {
 	guardId,
 	guardIds,
@@ -27,7 +27,7 @@ import {
 	guardMarket,
 	guardOffset,
 	guardTimestampedIds,
-} from "guards";
+} from "@guards";
 
 export class TrackService extends Context.Tag("TrackService")<
 	TrackService,

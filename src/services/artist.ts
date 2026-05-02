@@ -1,8 +1,8 @@
-import { makeRequest } from "@core/client";
+import { makeRequest } from "@transporter";
 import type {
 	AlbumRetrievalOptions,
 	MarketOnlyOptions,
-} from "@internal/options";
+} from "@schemas/options";
 import { Context, Effect, Layer } from "effect";
 import { IllegalArgumentException } from "effect/Cause";
 import {
@@ -18,9 +18,9 @@ import {
 	type GetArtistTopTracksResponse,
 	type GetSeveralArtistRequest,
 	type GetSeveralArtistResponse,
-} from "@internal/services/artist";
-import type { ApiError } from "@errors/index";
-import type { AuthService } from "auth";
+} from "@schemas/services/artist";
+import type { ApiError } from "@errors";
+import type { AuthService } from "@auth/index";
 import {
 	guardArrays,
 	guardId,
@@ -28,7 +28,7 @@ import {
 	guardLimit,
 	guardMarket,
 	guardOffset,
-} from "guards";
+} from "@guards";
 
 export class ArtistService extends Context.Tag("ArtistService")<
 	ArtistService,

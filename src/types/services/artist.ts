@@ -2,10 +2,10 @@ import {
 	imageSchema,
 	PageSchema,
 	SimplifiedAlbumSchema,
-} from "@internal/shared";
+} from "@schemas/shared";
 import { Schema } from "effect";
-import { TrackSchema } from "./track";
-import { SimplifiedArtistSchema } from "@internal/shared";
+import { TrackSchema } from "@schemas/services/track";
+import { SimplifiedArtistSchema } from "@schemas/shared";
 
 export const ArtistSchema = Schema.Struct({
 	...SimplifiedArtistSchema.fields,

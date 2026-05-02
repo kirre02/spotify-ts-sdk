@@ -6,7 +6,7 @@ import type {
 	SchemaDecodeError,
 	TokenNotFoundError,
 	UnknownApiError,
-} from "@errors/index";
+} from "@errors";
 import { Context, Effect, Layer, Option, Schema } from "effect";
 import type { ParseError } from "effect/ParseResult";
 

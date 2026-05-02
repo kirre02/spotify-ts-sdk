@@ -1,8 +1,11 @@
-import { externalUrlsSchema, imageSchema, PageSchema } from "@internal/shared";
+import { externalUrlsSchema, imageSchema, PageSchema } from "@schemas/shared";
 import { Schema } from "effect";
-import { DisplayReferenceUserSchema, ReferenceUserSchema } from "./user";
-import { TrackSchema } from "./track";
-import { EpisodeSchema } from "./episode";
+import {
+	DisplayReferenceUserSchema,
+	ReferenceUserSchema,
+} from "@schemas/services/user";
+import { TrackSchema } from "@schemas/services/track";
+import { EpisodeSchema } from "@schemas/services/episode";
 
 export const PlaylistTrackSchema = Schema.Struct({
 	added_at: Schema.optional(Schema.String),

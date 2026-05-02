@@ -1,10 +1,10 @@
 import { Context, Effect, Layer, Schema } from "effect";
-import { makeRequest } from "@core/client";
+import { makeRequest } from "@transporter";
 import type {
 	MarketOnlyOptions,
 	PaginatedMarketOptions,
 	PaginationOptions,
-} from "@internal/options";
+} from "@schemas/options";
 import {
 	GetSavedShowResponseSchema,
 	GetSeveralShowResponseSchema,
@@ -20,16 +20,16 @@ import {
 	type GetShowResponse,
 	type RemoveShowRequest,
 	type SaveShowRequest,
-} from "@internal/services/show";
-import type { ApiError } from "@errors/index";
-import type { AuthService } from "auth";
+} from "@schemas/services/show";
+import type { ApiError } from "@errors";
+import type { AuthService } from "@auth/index";
 import {
 	guardId,
 	guardIds,
 	guardLimit,
 	guardMarket,
 	guardOffset,
-} from "guards";
+} from "@guards";
 
 export class ShowService extends Context.Tag("ShowService")<
 	ShowService,

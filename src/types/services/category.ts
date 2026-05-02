@@ -1,5 +1,5 @@
 import { Schema } from "effect";
-import { imageSchema, PageSchema } from "@internal/shared";
+import { imageSchema, PageSchema } from "@schemas/shared";
 
 export const CategorySchema = Schema.Struct({
 	href: Schema.String,

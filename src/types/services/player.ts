@@ -1,7 +1,7 @@
 import { Schema } from "effect";
-import { externalUrlsSchema, PagedSetSchema } from "@internal/shared";
-import { TrackSchema } from "./track";
-import { EpisodeSchema } from "./episode";
+import { externalUrlsSchema, PagedSetSchema } from "@schemas/shared";
+import { TrackSchema } from "@schemas/services/track";
+import { EpisodeSchema } from "@schemas/services/episode";
 
 export const DeviceSchema = Schema.Struct({
 	id: Schema.NullOr(Schema.String),

@@ -3,10 +3,10 @@ import {
 	imageSchema,
 	PagedSetSchema,
 	PageSchema,
-} from "@internal/shared";
+} from "@schemas/shared";
 import { Schema } from "effect";
-import { ArtistSchema } from "./artist";
-import { TrackSchema } from "./track";
+import { ArtistSchema } from "@schemas/services/artist";
+import { TrackSchema } from "@schemas/services/track";
 
 export const UserSchema = Schema.Struct({
 	country: Schema.optional(Schema.String),

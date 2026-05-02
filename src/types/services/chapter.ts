@@ -2,9 +2,9 @@ import {
 	externalUrlsSchema,
 	imageSchema,
 	restrictionSchema,
-} from "@internal/shared";
+} from "@schemas/shared";
 import { Schema } from "effect";
-import { SimplifiedAudiobookSchema } from "./audiobook";
+import { SimplifiedAudiobookSchema } from "@schemas/services/audiobook";
 
 export const SimplifiedChapterSchema = Schema.Struct({
 	chapter_number: Schema.Number,

@@ -4,7 +4,7 @@ import {
 	PageSchema,
 	restrictionSchema,
 	SimplifiedShowSchema,
-} from "@internal/shared";
+} from "@schemas/shared";
 import { Schema } from "effect";
 
 export const SimplifiedEpisodeSchema = Schema.Struct({

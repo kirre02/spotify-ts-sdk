@@ -14,7 +14,7 @@ import {
 	PKCETokenExtensionSchema,
 	TOKEN_KEY,
 	type StorageAdapter,
-} from "./index";
+} from "@auth/index";
 import {
 	InvalidStateError,
 	JsonParseError,
@@ -22,7 +22,7 @@ import {
 	SchemaDecodeError,
 	TokenNotFoundError,
 	UnknownApiError,
-} from "@errors/index";
+} from "@errors";
 import { KeyValueStore } from "@effect/platform/KeyValueStore";
 
 const VERIFIER_KEY = "@better-music/verifier";

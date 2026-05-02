@@ -3,9 +3,9 @@ import {
 	externalIdsSchema,
 	PageSchema,
 	SimplifiedAlbumSchema,
-} from "@internal/shared";
+} from "@schemas/shared";
 import { Schema } from "effect";
-import { SimplifiedTrackSchema } from "./track";
+import { SimplifiedTrackSchema } from "@schemas/services/track";
 
 export const AlbumSchema = Schema.Struct({
 	...SimplifiedAlbumSchema.fields,

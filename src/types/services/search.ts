@@ -4,11 +4,11 @@ import {
 	PageSchema,
 	SimplifiedAlbumSchema,
 	SimplifiedShowSchema,
-} from "@internal/shared";
-import { ArtistSchema } from "./artist";
-import { PlaylistItemsSchema } from "./playlist";
-import { SimplifiedEpisodeSchema } from "./episode";
-import { SimplifiedAudiobookSchema } from "./audiobook";
+} from "@schemas/shared";
+import { ArtistSchema } from "@schemas/services/artist";
+import { PlaylistItemsSchema } from "@schemas/services/playlist";
+import { SimplifiedEpisodeSchema } from "@schemas/services/episode";
+import { SimplifiedAudiobookSchema } from "@schemas/services/audiobook";
 
 export type SearchRequest = {
 	/**

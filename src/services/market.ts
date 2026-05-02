@@ -1,7 +1,7 @@
-import { makeRequest } from "@core/client";
-import type { ApiError } from "@errors/index";
+import { makeRequest } from "@transporter";
+import type { ApiError } from "@errors";
 import { Context, Effect, Layer, Schema } from "effect";
-import type { AuthService } from "auth";
+import type { AuthService } from "@auth/index";
 
 export class MarketService extends Context.Tag("MarketService")<
 	MarketService,

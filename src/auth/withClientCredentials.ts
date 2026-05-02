@@ -12,14 +12,14 @@ import {
 	NetworkError,
 	SchemaDecodeError,
 	UnknownApiError,
-} from "../errors";
+} from "@errors";
 import {
 	AuthService,
 	BaseTokenSchema,
 	layerFromStorage,
 	TOKEN_KEY,
 	type StorageAdapter,
-} from "./index";
+} from "@auth/index";
 import { KeyValueStore } from "@effect/platform/KeyValueStore";
 
 const StoredTokenSchema = Schema.Struct({

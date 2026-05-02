@@ -1,10 +1,10 @@
 import { Context, Effect, Layer, Schema } from "effect";
 import { IllegalArgumentException } from "effect/Cause";
-import { makeRequest } from "@core/client";
+import { makeRequest } from "@transporter";
 import type {
 	AfterBasedPaginationOptions,
 	TimeRangePaginationOptions,
-} from "@internal/options";
+} from "@schemas/options";
 import {
 	GetCurrentUserResponseSchema,
 	GetFollowedArtistResponseSchema,
@@ -26,16 +26,16 @@ import {
 	type UserUnfollowArtistsRequest,
 	type UserUnfollowPlaylistRequest,
 	type UserUnfollowUsersRequest,
-} from "@internal/services/user";
-import type { ApiError } from "@errors/index";
-import type { AuthService } from "auth";
+} from "@schemas/services/user";
+import type { ApiError } from "@errors";
+import type { AuthService } from "@auth/index";
 import {
 	guardId,
 	guardIds,
 	guardLimit,
 	guardOffset,
 	guardString,
-} from "guards";
+} from "@guards";
 
 export class UserService extends Context.Tag("UserService")<
 	UserService,

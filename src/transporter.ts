@@ -10,10 +10,10 @@ import {
 	SchemaDecodeError,
 	UnauthorizedError,
 	UnknownApiError,
-} from "@errors/index";
-import type { AllOptions } from "@internal/options";
-import { ErrorSchema } from "@internal/shared";
-import { AuthService } from "auth";
+} from "@errors";
+import type { AllOptions } from "@schemas/options";
+import { ErrorSchema } from "@schemas/shared";
+import { AuthService } from "@auth/index";
 
 export function makeRequest<T, I, R>({
 	method = "GET",

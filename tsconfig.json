@@ -13,15 +13,35 @@
     "noImplicitOverride": true,
     "module": "preserve",
     "noEmit": true,
-    "lib": ["es2022"],
+    "lib": [
+      "es2022"
+    ],
     "baseUrl": "./src",
     "paths": {
-      "@internal/*": ["types/*"],
-      "@services/*": ["services/*"],
-      "@core/*": ["core/*"],
-      "@errors/*": ["errors/*"]
+      "@auth/*": [
+        "auth/*"
+      ],
+      "@errors": [
+        "errors/index.ts"
+      ],
+      "@guards": [
+        "guards/index.ts"
+      ],
+      "@schemas/*": [
+        "types/*"
+      ],
+      "@services/*": [
+        "services/*"
+      ],
+      "@transporter": [
+        "transporter.ts"
+      ]
     }
   },
-  "include": ["**/*.ts"],
-  "exclude": ["node_modules"]
+  "include": [
+    "**/*.ts"
+  ],
+  "exclude": [
+    "node_modules"
+  ]
 }

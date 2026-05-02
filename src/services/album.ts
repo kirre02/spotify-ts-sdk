@@ -1,10 +1,10 @@
 import { Context, Effect, Layer, Schema } from "effect";
-import { makeRequest } from "@core/client";
+import { makeRequest } from "@transporter";
 import type {
 	MarketOnlyOptions,
 	PaginatedMarketOptions,
 	PaginationOptions,
-} from "@internal/options";
+} from "@schemas/options";
 import {
 	GetAlbumResponseSchema,
 	GetAlbumTracksResponseSchema,
@@ -22,16 +22,16 @@ import {
 	type GetSeveralAlbumResponse,
 	type RemoveAlbumRequest,
 	type SaveAlbumRequest,
-} from "@internal/services/album";
-import type { ApiError } from "@errors/index";
-import type { AuthService } from "auth";
+} from "@schemas/services/album";
+import type { ApiError } from "@errors";
+import type { AuthService } from "@auth/index";
 import {
 	guardId,
 	guardIds,
 	guardLimit,
 	guardMarket,
 	guardOffset,
-} from "guards";
+} from "@guards";
 
 export class AlbumService extends Context.Tag("AlbumService")<
 	AlbumService,

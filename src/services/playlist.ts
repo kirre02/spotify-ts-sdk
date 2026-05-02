@@ -1,11 +1,11 @@
 import { Context, Effect, Layer, Schema } from "effect";
 import { IllegalArgumentException } from "effect/Cause";
-import { makeRequest } from "@core/client";
+import { makeRequest } from "@transporter";
 import type {
 	DetailedMarketPaginationOptions,
 	MarketFieldOptions,
 	PaginationOptions,
-} from "@internal/options";
+} from "@schemas/options";
 import {
 	GetPlaylistItemResponseSchema,
 	GetPlaylistResponseSchema,
@@ -35,9 +35,9 @@ import {
 	type GetUserPlaylistResponse,
 	GetPlaylistCoverImageResponseSchema,
 	type GetPlaylistCoverImageResponse,
-} from "@internal/services/playlist";
-import type { ApiError } from "@errors/index";
-import type { AuthService } from "auth";
+} from "@schemas/services/playlist";
+import type { ApiError } from "@errors";
+import type { AuthService } from "@auth/index";
 import {
 	guardAdditionalTypes,
 	guardFields,
@@ -47,7 +47,7 @@ import {
 	guardOffset,
 	guardString,
 	guardUris,
-} from "guards";
+} from "@guards";
 
 export class PlaylistService extends Context.Tag("PlaylistService")<
 	PlaylistService,

@@ -1,9 +1,9 @@
 import { Context, Effect, Layer, Schema } from "effect";
-import { makeRequest } from "@core/client";
+import { makeRequest } from "@transporter";
 import type {
 	DateRangeOptions,
 	MarketAdditionalTypesOptions,
-} from "@internal/options";
+} from "@schemas/options";
 import {
 	GetAvailableDevicesResponseSchema,
 	GetCurrentlyPlayingResponseSchema,
@@ -25,9 +25,9 @@ import {
 	type StartOrResumePlaybackRequest,
 	type TogglePlaybackShuffleRequest,
 	type TransferPlaybackRequest,
-} from "@internal/services/player";
-import type { ApiError } from "@errors/index";
-import type { AuthService } from "auth";
+} from "@schemas/services/player";
+import type { ApiError } from "@errors";
+import type { AuthService } from "@auth/index";
 import { IllegalArgumentException } from "effect/Cause";
 import {
 	guardAdditionalTypes,
@@ -38,7 +38,7 @@ import {
 	guardString,
 	guardTimestamp,
 	guardUris,
-} from "guards";
+} from "@guards";
 
 export class PlayerService extends Context.Tag("PlayerService")<
 	PlayerService,

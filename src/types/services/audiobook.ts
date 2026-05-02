@@ -3,9 +3,9 @@ import {
 	externalUrlsSchema,
 	imageSchema,
 	PageSchema,
-} from "@internal/shared";
+} from "@schemas/shared";
 import { Schema } from "effect";
-import { SimplifiedChapterSchema } from "./chapter";
+import { SimplifiedChapterSchema } from "@schemas/services/chapter";
 
 export const SimplifiedAudiobookSchema = Schema.Struct({
 	authors: Schema.Array(

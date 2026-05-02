@@ -4,8 +4,8 @@ import { AudiobookService, AudiobookServiceLive } from "@services/audiobook";
 import { CategoryService, CategoryServiceLive } from "@services/category";
 import { ChapterService, ChapterServiceLive } from "@services/chapter";
 import { EpisodeService, EpisodeServiceLive } from "@services/episode";
-import { makeClientCredentialsAuth } from "auth/withClientCredentials";
-import { makePKCEAuth } from "auth/withPKCE";
+import { makeClientCredentialsAuth } from "@auth/withClientCredentials";
+import { makePKCEAuth } from "@auth/withPKCE";
 import { MarketService, MarketServiceLive } from "@services/market";
 import { PlayerService, PlayerServiceLive } from "@services/player";
 import { PlaylistService, PlaylistServiceLive } from "@services/playlist";
@@ -15,7 +15,11 @@ import { TrackService, TrackServiceLive } from "@services/track";
 import { UserService, UserServiceLive } from "@services/user";
 import { Cause, Effect, Exit, Layer, ManagedRuntime } from "effect";
 import type { ConfigError } from "effect/ConfigError";
-import { type AuthService, PKCEService, type StorageAdapter } from "auth";
+import {
+	type AuthService,
+	PKCEService,
+	type StorageAdapter,
+} from "@auth/index";
 import type { PlatformError } from "@effect/platform/Error";
 import type {
 	CheckSavedTrackRequest,
@@ -23,7 +27,7 @@ import type {
 	GetTrackRequest,
 	RemoveTrackRequest,
 	SaveTrackRequest,
-} from "@internal/services/track";
+} from "@schemas/services/track";
 import type {
 	AfterBasedPaginationOptions,
 	AlbumRetrievalOptions,
@@ -39,7 +43,7 @@ import type {
 	PaginationOptions,
 	Scopes,
 	TimeRangePaginationOptions,
-} from "@internal/options";
+} from "@schemas/options";
 import type {
 	CheckSavedAlbumRequest,
 	GetAlbumRequest,
@@ -47,13 +51,13 @@ import type {
 	GetSeveralAlbumRequest,
 	RemoveAlbumRequest,
 	SaveAlbumRequest,
-} from "@internal/services/album";
+} from "@schemas/services/album";
 import type {
 	GetArtistAlbumRequest,
 	GetArtistRequest,
 	GetArtistTopTracksRequest,
 	GetSeveralArtistRequest,
-} from "@internal/services/artist";
+} from "@schemas/services/artist";
 import type {
 	CheckSavedAudiobookRequest,
 	GetAudiobookChapterRequest,
@@ -61,19 +65,19 @@ import type {
 	GetSeveralAudiobookRequest,
 	RemoveAudiobookRequest,
 	SaveAudiobookRequest,
-} from "@internal/services/audiobook";
-import type { GetCategoryRequest } from "@internal/services/category";
+} from "@schemas/services/audiobook";
+import type { GetCategoryRequest } from "@schemas/services/category";
 import type {
 	GetChapterRequest,
 	GetSeveralChapterRequest,
-} from "@internal/services/chapter";
+} from "@schemas/services/chapter";
 import type {
 	CheckSavedEpisodeRequest,
 	GetEpisodeRequest,
 	GetSeveralEpisodeRequest,
 	RemoveEpisodeRequest,
 	SaveEpisodeRequest,
-} from "@internal/services/episode";
+} from "@schemas/services/episode";
 import type {
 	AddToPlaybackQueueRequest,
 	PausePlaybackRequest,
@@ -85,7 +89,7 @@ import type {
 	StartOrResumePlaybackRequest,
 	TogglePlaybackShuffleRequest,
 	TransferPlaybackRequest,
-} from "@internal/services/player";
+} from "@schemas/services/player";
 import type {
 	GetUserProfileRequest,
 	IsFollowingArtistsRequest,
@@ -97,7 +101,7 @@ import type {
 	UserUnfollowArtistsRequest,
 	UserUnfollowPlaylistRequest,
 	UserUnfollowUsersRequest,
-} from "@internal/services/user";
+} from "@schemas/services/user";
 import type {
 	CheckSavedShowRequest,
 	GetSeveralShowRequest,
@@ -105,8 +109,8 @@ import type {
 	GetShowRequest,
 	RemoveShowRequest,
 	SaveShowRequest,
-} from "@internal/services/show";
-import type { SearchRequest } from "@internal/services/search";
+} from "@schemas/services/show";
+import type { SearchRequest } from "@schemas/services/search";
 import type {
 	AddPlaylistItemRequest,
 	AddPlaylistCoverImageRequest,
@@ -118,7 +122,7 @@ import type {
 	GetUserPlaylistRequest,
 	RemovePlaylistItemRequest,
 	UpdatePlaylistItemRequest,
-} from "@internal/services/playlist";
+} from "@schemas/services/playlist";
 
 type AppServices =
 	| AlbumService

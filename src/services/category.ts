@@ -1,19 +1,19 @@
 import { Context, Effect, Layer } from "effect";
-import { makeRequest } from "@core/client";
+import { makeRequest } from "@transporter";
 import type {
 	LocaleOnlyOptions,
 	LocalizedPaginationOptions,
-} from "@internal/options";
+} from "@schemas/options";
 import {
 	GetCategoryResponseSchema,
 	GetSeveralCategoryResponseSchema,
 	type GetCategoryRequest,
 	type GetCategoryResponse,
 	type GetSeveralCategoryResponse,
-} from "@internal/services/category";
-import type { ApiError } from "@errors/index";
-import type { AuthService } from "auth";
-import { guardLimit, guardLocale, guardOffset, guardString } from "guards";
+} from "@schemas/services/category";
+import type { ApiError } from "@errors";
+import type { AuthService } from "@auth/index";
+import { guardLimit, guardLocale, guardOffset, guardString } from "@guards";
 
 export class CategoryService extends Context.Tag("CategoryService")<
 	CategoryService,

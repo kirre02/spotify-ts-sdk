@@ -1,6 +1,6 @@
 import { Effect, Context, Layer } from "effect";
-import { makeRequest } from "@core/client";
-import type { MarketOnlyOptions } from "@internal/options";
+import { makeRequest } from "@transporter";
+import type { MarketOnlyOptions } from "@schemas/options";
 import {
 	GetChapterResponseSchema,
 	GetSeveralChapterResponseSchema,
@@ -8,10 +8,10 @@ import {
 	type GetChapterResponse,
 	type GetSeveralChapterRequest,
 	type GetSeveralChapterResponse,
-} from "@internal/services/chapter";
-import type { ApiError } from "@errors/index";
-import type { AuthService } from "auth";
-import { guardId, guardIds, guardMarket } from "guards";
+} from "@schemas/services/chapter";
+import type { ApiError } from "@errors";
+import type { AuthService } from "@auth/index";
+import { guardId, guardIds, guardMarket } from "@guards";
 
 export class ChapterService extends Context.Tag("ChapterService")<
 	ChapterService,
