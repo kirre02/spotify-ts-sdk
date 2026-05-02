@@ -34,16 +34,13 @@ export function makeRequest<T, I, R>({
 	const url = new URL(`${baseUrl}${route}`);
 
 	if (options) {
-		Object.entries(options).forEach(([key, value]) => {
-			if (value !== undefined && value !== null) {
-				if (Array.isArray(value)) {
-					value = value
-						.map((x: string) => x.trim())
-						.join(encodeURIComponent(","));
-				}
-				url.searchParams.append(key, String(value));
-			}
-		});
+		for (const [key, value] of Object.entries(options)) {
+			if (value == null) continue;
+			const serialized = Array.isArray(value)
+				? value.map((x: string) => x.trim()).join(encodeURIComponent(","))
+				: String(value);
+			url.searchParams.append(key, serialized);
+		}
 	}
 
 	return Effect.gen(function* () {
@@ -55,7 +52,7 @@ export function makeRequest<T, I, R>({
 				fetch(url.toString(), {
 					method,
 					headers: { Authorization: `Bearer ${token}`, ...customHeaders },
-					...(body ? { body } : undefined),
+					...(body != null ? { body } : {}),
 				}),
 			catch: (cause) =>
 				new NetworkError({
@@ -123,16 +120,11 @@ export function makeRequest<T, I, R>({
 		);
 	}).pipe(
 		Effect.tapError((error) => {
-			if (error._tag === "RateLimitError") {
+			if (error._tag === "RateLimitError")
 				return Effect.sleep(error.retryAfter);
-			}
 			return Effect.void;
 		}),
 		Effect.retry({
-			while: (error) =>
-				error._tag === "RateLimitError" ||
-				error._tag === "UnauthorizedError" ||
-				error._tag === "NetworkError",
 			schedule: Schedule.union(
 				Schedule.union(
 					Schedule.recurs(3).pipe(
@@ -147,7 +139,7 @@ export function makeRequest<T, I, R>({
 					),
 				),
 				Schedule.exponential(Duration.seconds(1), 2).pipe(
-					Schedule.compose(Schedule.recurs(3)),
+					Schedule.intersect(Schedule.recurs(3)),
 					Schedule.whileInput(
 						(error: ApiError) => error._tag === "NetworkError",
 					),
