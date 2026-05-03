@@ -83,7 +83,16 @@ export type SaveTrackRequest = {
 	 * Maximum: 50 IDs. If this field is used any IDs present in the `ids` field will be ignored.
 	 */
 	timestamped_ids?: {
+		/**
+		 * The Spotify ID for the track.
+		 * @see {@link https://developer.spotify.com/documentation/web-api/concepts/spotify-uris-ids|Spotify IDs}
+		 */
 		id: string;
+		/**
+		 * The timestamp when the track was added to the library.
+		 * Use ISO 8601 format with UTC timezone (e.g., 2023-01-15T14:30:00Z).
+		 * You can specify past timestamps to insert tracks at specific positions in the library's chronological order.
+		 */
 		added_at: string;
 	}[];
 };
