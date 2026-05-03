@@ -1,23 +1,22 @@
 {
-  "name": "@kirre02/spotify-ts-sdk",
-  "version": "0.0.0",
-  "description": "",
-  "keywords": [],
-  "author": "",
-  "main": "src/index.js",
-  "scripts": {
-    "dev": "tsx src/index.ts",
-    "scratch": "tsx scratch.ts"
-  },
-  "dependencies": {
-    "@effect/platform": "^0.94.5",
-    "@effect/platform-node": "^0.104.1",
-    "effect": "^3.12.10"
-  },
-  "devDependencies": {
-    "@biomejs/biome": "2.3.10",
-    "@types/node": "^22.13.1",
-    "tsx": "^4.17.0",
-    "typescript": "^5.6.2"
-  }
+	"name": "@kirre02/spotify-ts-sdk",
+	"version": "0.0.0",
+	"description": "",
+	"keywords": [],
+	"author": "",
+	"main": "src/index.js",
+	"scripts": {
+		"dev": "tsx src/index.ts",
+		"scratch": "tsx scratch.ts"
+	},
+	"dependencies": {
+		"@effect/platform": "^0.94.5",
+		"effect": "^3.12.10"
+	},
+	"devDependencies": {
+		"@biomejs/biome": "2.3.10",
+		"@types/node": "^22.13.1",
+		"tsx": "^4.17.0",
+		"typescript": "^5.6.2"
+	}
 }
