@@ -15,7 +15,28 @@
     "noEmit": true,
     "lib": [
       "es2022"
-    ]
+    ],
+    "baseUrl": "./src",
+    "paths": {
+      "@auth/*": [
+        "auth/*"
+      ],
+      "@errors": [
+        "errors/index.ts"
+      ],
+      "@guards": [
+        "guards/index.ts"
+      ],
+      "@schemas/*": [
+        "types/*"
+      ],
+      "@services/*": [
+        "services/*"
+      ],
+      "@transporter": [
+        "transporter.ts"
+      ]
+    }
   },
   "include": [
     "**/*.ts"
