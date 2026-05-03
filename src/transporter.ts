@@ -68,11 +68,28 @@ export function makeRequest<T, I, R>({
 				}),
 		});
 
-		const json = yield* Effect.tryPromise({
-			try: () => response.json(),
+		const text = yield* Effect.tryPromise({
+			try: () => response.text(),
+			catch: (cause) =>
+				new JsonParseError({ message: "Failed to read response body", cause }),
+		});
+
+		if (!text || !text.trim())
+			return yield* Schema.decodeUnknown(schema)(undefined).pipe(
+				Effect.mapError(
+					(cause) =>
+						new SchemaDecodeError({
+							message: "Failed to decode Spotify no-content response",
+							cause,
+						}),
+				),
+			);
+
+		const json = yield* Effect.try({
+			try: () => JSON.parse(text),
 			catch: (cause) =>
 				new JsonParseError({
-					message: "Failed to transform Spotify response to JSON",
+					message: "Failed to parse response JSON",
 					cause,
 				}),
 		});
