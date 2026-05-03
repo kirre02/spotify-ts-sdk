@@ -28,10 +28,10 @@ export function makeRequest<T, I, R>({
 	schema: Schema.Schema<T, I, R>;
 	options?: AllOptions;
 	customHeaders?: Record<string, string>;
-	body?: string;
+	body?: unknown;
 }): Effect.Effect<T, ApiError, AuthService | R> {
 	const baseUrl = "https://api.spotify.com/v1/";
-	const url = new URL(`${baseUrl}${route}`);
+	const url = new URL(route.replace(/^\/+/, ""), baseUrl);
 
 	if (options) {
 		for (const [key, value] of Object.entries(options)) {
@@ -51,8 +51,14 @@ export function makeRequest<T, I, R>({
 			try: () =>
 				fetch(url.toString(), {
 					method,
-					headers: { Authorization: `Bearer ${token}`, ...customHeaders },
-					...(body != null ? { body } : {}),
+					headers: {
+						Authorization: `Bearer ${token}`,
+						...(body != null && !customHeaders["Content-Type"]
+							? { "Content-Type": "application/json" }
+							: {}),
+						...customHeaders,
+					},
+					body: body != null ? JSON.stringify(body) : undefined,
 				}),
 			catch: (cause) =>
 				new NetworkError({

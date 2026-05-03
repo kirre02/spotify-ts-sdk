@@ -127,10 +127,10 @@ export const PlayerServiceLive = Layer.effect(
 					method: "PUT",
 					route: "me/player",
 					schema: Schema.Void,
-					body: JSON.stringify({
+					body: {
 						device_ids: [deviceId.trim()],
 						play: playbackState,
-					}),
+					},
 				});
 			},
 			getDevices: () => {
@@ -196,15 +196,15 @@ export const PlayerServiceLive = Layer.effect(
 				return makeRequest({
 					method: "PUT",
 					route: deviceId
-						? `/me/player/play?device_id=${deviceId}`
+						? `me/player/play?device_id=${deviceId}`
 						: "/me/player/play",
 					schema: Schema.Void,
-					body: JSON.stringify({
+					body: {
 						position_ms: positionMs,
 						context_uri: contextUri,
 						uris,
 						offset,
-					}),
+					},
 				});
 			},
 			pausePlayback: (request: PausePlaybackRequest) => {

@@ -171,9 +171,9 @@ export const UserServiceLive = Layer.effect(
 					method: "PUT",
 					route: `playlists/${id.trim()}/followers`,
 					schema: Schema.Void,
-					body: JSON.stringify({
+					body: {
 						public: isPublic,
-					}),
+					},
 				});
 			},
 			unfollowPlaylist: (request: UserUnfollowPlaylistRequest) => {

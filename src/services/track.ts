@@ -138,13 +138,12 @@ export const TrackServiceLive = Layer.effect(
 					method: "PUT",
 					route: "me/tracks",
 					schema: Schema.Void,
-					body: JSON.stringify(
+					body:
 						ids != null
 							? { ids: body }
 							: {
 									timestamped_ids: body,
 								},
-					),
 				});
 			},
 			remove: (request: RemoveTrackRequest) => {

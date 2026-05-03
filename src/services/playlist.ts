@@ -139,12 +139,12 @@ export const PlaylistServiceLive = Layer.effect(
 					method: "PUT",
 					route: `playlists/${id.trim()}`,
 					schema: Schema.Void,
-					body: JSON.stringify({
+					body: {
 						name,
 						public: isPublic,
 						collaborative,
 						description,
-					}),
+					},
 				});
 			},
 			getItems: (
@@ -211,13 +211,13 @@ export const PlaylistServiceLive = Layer.effect(
 					method: "PUT",
 					route: `playlists/${id.trim()}/tracks`,
 					schema: UpdatePlaylistItemResponseSchema,
-					body: JSON.stringify({
+					body: {
 						uris,
 						range_start: rangeStart,
 						insert_before: insertBefore,
 						range_length: rangeLength,
 						snapshot_id: snapshotId,
-					}),
+					},
 				});
 			},
 			add: (request: AddPlaylistItemRequest) => {
@@ -252,10 +252,10 @@ export const PlaylistServiceLive = Layer.effect(
 					method: "POST",
 					route: `playlists/${id.trim()}/tracks`,
 					schema: AddPlaylistItemResponseSchema,
-					body: JSON.stringify({
+					body: {
 						position,
 						uris,
-					}),
+					},
 				});
 			},
 			remove: (request: RemovePlaylistItemRequest) => {
@@ -291,10 +291,10 @@ export const PlaylistServiceLive = Layer.effect(
 					method: "DELETE",
 					route: `playlists/${id.trim()}/tracks`,
 					schema: RemovePlaylistItemResponseSchema,
-					body: JSON.stringify({
+					body: {
 						tracks,
 						snapshot_id: snapshotId,
-					}),
+					},
 				});
 			},
 			getPlaylists: (options?: PaginationOptions) => {
@@ -346,12 +346,12 @@ export const PlaylistServiceLive = Layer.effect(
 					method: "POST",
 					route: "me/playlists",
 					schema: CreatePlaylistResponseSchema,
-					body: JSON.stringify({
+					body: {
 						name,
 						public: isPublic,
 						collaborative,
 						description,
-					}),
+					},
 				});
 			},
 			getCoverImage: (request: GetPlaylistCoverImageRequest) => {
