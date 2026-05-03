@@ -149,16 +149,9 @@ export function makeRequest<T, I, R>({
 		}),
 		Effect.retry({
 			schedule: Schedule.union(
-				Schedule.union(
-					Schedule.recurs(3).pipe(
-						Schedule.whileInput(
-							(error: ApiError) => error._tag === "RateLimitError",
-						),
-					),
-					Schedule.once.pipe(
-						Schedule.whileInput(
-							(error: ApiError) => error._tag === "UnauthorizedError",
-						),
+				Schedule.recurs(3).pipe(
+					Schedule.whileInput(
+						(error: ApiError) => error._tag === "RateLimitError",
 					),
 				),
 				Schedule.exponential(Duration.seconds(1), 2).pipe(
