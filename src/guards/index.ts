@@ -86,17 +86,15 @@ export function guardOffset(offset: number, label: string) {
 }
 
 export function guardLocale(locale: string, label: string) {
-	if (typeof locale !== "string")
-		throw new IllegalArgumentException(`${label} Locale must be a string`);
-	if (!/^[a-z]{2}_[A-Z]{2}$/.test(locale.trim()))
+	guardString(locale, `${label} Locale`);
+	if (!/^[a-zA-Z]{2}_[a-zA-Z]{2}$/.test(locale.trim()))
 		throw new IllegalArgumentException(
 			`${label} Locale must be in the format "es_MX"`,
 		);
 }
 
 export function guardMarket(market: string, label: string) {
-	if (typeof market !== "string")
-		throw new IllegalArgumentException(`${label} Market must be a string`);
+	guardString(market, `${label} Market`);
 	if (!/^[A-Z]{2}$/.test(market.trim()))
 		throw new IllegalArgumentException(
 			`${label} Market must be a two letter code (ISO 3166-1 alpha 2)`,
@@ -125,10 +123,7 @@ export function guardTimestamp(timestamp: number, label: string) {
 }
 
 export function guardFields(fields: string, label: string) {
-	if (typeof fields !== "string")
-		throw new IllegalArgumentException(`${label} Fields must be a string`);
-	if (fields.trim().length === 0)
-		throw new IllegalArgumentException(`${label} Fields can not be empty`);
+	guardString(fields, `${label} Fields`);
 }
 
 export function guardContextUri(contextUri: string, label: string) {
