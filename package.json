@@ -1,22 +1,62 @@
 {
-	"name": "@kirre02/spotify-ts-sdk",
-	"version": "0.0.0",
-	"description": "",
-	"keywords": [],
-	"author": "",
-	"main": "src/index.js",
-	"scripts": {
-		"dev": "tsx src/index.ts",
-		"scratch": "tsx scratch.ts"
-	},
-	"dependencies": {
-		"@effect/platform": "^0.94.5",
-		"effect": "^3.12.10"
-	},
-	"devDependencies": {
-		"@biomejs/biome": "2.3.10",
-		"@types/node": "^22.13.1",
-		"tsx": "^4.17.0",
-		"typescript": "^5.6.2"
-	}
+  "name": "better-music",
+  "version": "1.0.0",
+  "description": "Fully type-safe music SDK",
+  "keywords": [
+    "music",
+    "typescript"
+  ],
+  "bugs": {
+    "url": "https://github.com/voffie/better-music/issues"
+  },
+  "license": "MIT",
+  "contributors": [
+    {
+      "name": "Viktor Söderborg",
+      "url": "https://github.com/voffie"
+    },
+    {
+      "name": "Erik Nokrach",
+      "url": "https://github.com/kirre02"
+    }
+  ],
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/voffie/better-music.git"
+  },
+  "files": [
+    "dist/index.d.mts",
+    "dist/index.mjs"
+  ],
+  "type": "module",
+  "main": "./dist/index.mjs",
+  "module": "./dist/index.mjs",
+  "types": "./dist/index.d.mts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.mts",
+      "import": "./dist/index.mjs",
+      "default": "./dist/index.mjs"
+    }
+  },
+  "scripts": {
+    "build": "tsdown",
+    "prepublishOnly": "pnpm build",
+    "check": "tsc --noEmit",
+    "lint": "oxlint .",
+    "fmt": "oxfmt .",
+    "fmt:check": "oxfmt --check ."
+  },
+  "dependencies": {
+    "@effect/platform": "0.96.1",
+    "effect": "3.21.2"
+  },
+  "devDependencies": {
+    "@effect/language-service": "0.85.1",
+    "@types/node": "latest",
+    "oxfmt": "0.47.0",
+    "oxlint": "1.62.0",
+    "tsdown": "0.21.10",
+    "typescript": "6.0.3"
+  }
 }

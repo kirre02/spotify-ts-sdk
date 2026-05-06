@@ -1,47 +1,34 @@
 {
   "compilerOptions": {
+    "target": "ES2022",
+    "module": "ESNext",
+    "moduleResolution": "bundler",
+    "lib": ["ES2022", "DOM"],
+    "types": ["node"],
+    "strict": true,
+    "declaration": true,
+    "declarationMap": true,
     "esModuleInterop": true,
     "skipLibCheck": true,
-    "target": "es2022",
-    "allowJs": true,
-    "resolveJsonModule": true,
-    "moduleDetection": "force",
-    "isolatedModules": true,
-    "verbatimModuleSyntax": true,
-    "strict": true,
+    "forceConsistentCasingInFileNames": true,
     "noUncheckedIndexedAccess": true,
     "noImplicitOverride": true,
-    "module": "preserve",
     "noEmit": true,
-    "lib": [
-      "es2022"
-    ],
-    "baseUrl": "./src",
+    "noFallthroughCasesInSwitch": true,
     "paths": {
-      "@auth/*": [
-        "auth/*"
-      ],
-      "@errors": [
-        "errors/index.ts"
-      ],
-      "@guards": [
-        "guards/index.ts"
-      ],
-      "@schemas/*": [
-        "types/*"
-      ],
-      "@services/*": [
-        "services/*"
-      ],
-      "@transporter": [
-        "transporter.ts"
-      ]
+      "@auth/*": ["./src/auth/*"],
+      "@errors": ["./src/errors/index.ts"],
+      "@guards": ["./src/guards/index.ts"],
+      "@schemas/*": ["./src/types/*"],
+      "@services/*": ["./src/services/*"],
+      "@transporter": ["./src/transporter.ts"]
     }
   },
-  "include": [
-    "**/*.ts"
-  ],
-  "exclude": [
-    "node_modules"
+  "include": ["src/**/*"],
+  "exclude": ["node_modules", "dist"],
+  "plugins": [
+    {
+      "name": "@effect/language-service"
+    }
   ]
 }

@@ -6,8 +6,6 @@ tmp/
 dist/
 build/
 docs/
-scratchpad/*
-!scratchpad/tsconfig.json
 .direnv/
 .idea/
 .env
